@@ -1,0 +1,28 @@
+{
+  "name": "jcb-billing-backend",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Backend server for JCB Billing App",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "keywords": [
+    "jcb",
+    "billing",
+    "invoice",
+    "express"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^16.6.1",
+    "express": "^4.22.1",
+    "pg": "^8.20.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
+}

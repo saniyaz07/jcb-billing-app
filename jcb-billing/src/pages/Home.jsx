@@ -1,0 +1,1 @@
+import { getBills, getCustomers } from '../services/api';  // Go up 1 level
