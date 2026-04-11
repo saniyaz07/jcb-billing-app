@@ -101,15 +101,33 @@ app.get('/test-db', async (req, res) => {
    BUSINESS ROUTES
 ================================ */
 app.post('/api/business', async (req, res) => {
-  const { company_name, owner_name, phone, address, gst_number, bank_name, account_number, ifsc } = req.body;
-
+  // const { company_name, owner_name, phone, address, gst_number, bank_name, account_number, ifsc } = req.body;
+   const {
+  company_name,
+  owner_name,
+  phone,
+  address,
+  gst_number,
+  bank_name,
+  account_number,
+  ifsc_code
+} = req.body;
   try {
     const result = await pool.query(
-      `INSERT INTO business 
-      (company_name, owner_name, phone, address, gst_number, bank_name, account_number, ifsc_code) 
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
-      [company_name, owner_name, phone, address, gst_number, bank_name, account_number, ifsc]
-    );
+  `INSERT INTO business 
+  (company_name, owner_name, phone, address, gst_number, bank_name, account_number, ifsc_code) 
+  VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *`,
+  [
+    company_name,
+    owner_name,
+    phone,
+    address,
+    gst_number,
+    bank_name,
+    account_number,
+    ifsc_code
+  ]
+);
 
     res.json(result.rows[0]);
   } catch (err) {
