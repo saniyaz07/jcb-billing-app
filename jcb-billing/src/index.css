@@ -29,14 +29,16 @@
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
-} */
+} 
+  */
 
 /* ================= RESPONSIVE ROOT ================= */
 /* @media (max-width: 1024px) {
   :root {
     font-size: 16px;
   }
-} */
+} 
+  */
 
 /* ================= DARK MODE ================= */
 /* @media (prefers-color-scheme: dark) {
@@ -57,14 +59,16 @@
       rgba(0, 0, 0, 0.4) 0 10px 15px -3px,
       rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
   }
-} */
+} 
+  */
 
 /* ================= BODY ================= */
 /* body {
   margin: 0;
   background: #f4f6f8;
   font-family: var(--sans);
-} */
+}
+   */
 
 /* ================= ROOT CONTAINER ================= */
 /* #root {
@@ -80,7 +84,8 @@
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-} */
+} 
+  */
 
 /* ================= HEADINGS ================= */
 /* h1,
@@ -88,17 +93,20 @@ h2 {
   font-family: var(--heading);
   font-weight: 500;
   color: var(--text-h);
-} */
+}
+   */
 
 /* h1 {
   font-size: 48px;
   margin: 24px 0;
-} */
+}
+   */
 
 /* h2 {
   font-size: 22px;
   margin-bottom: 8px;
-} */
+} 
+*/
 
 /* @media (max-width: 1024px) {
   h1 {
@@ -108,11 +116,13 @@ h2 {
   h2 {
     font-size: 20px;
   }
-} */
+} 
+  */
 
 /* p {
   margin: 0;
-} */
+} 
+  */
 
 /* ================= CODE ================= */
 /* code {
@@ -121,7 +131,8 @@ h2 {
   padding: 4px 8px;
   background: var(--code-bg);
   border-radius: 4px;
-} */
+} 
+  */
 
 /* ================= CARD (VERY IMPORTANT) ================= */
 /* .card {
@@ -131,7 +142,8 @@ h2 {
   box-shadow: var(--shadow);
   border: 1px solid var(--border);
   text-align: left;
-} */
+} 
+  */
 
 /* ================= BUTTON ================= */
 /* .btn {
@@ -143,11 +155,13 @@ h2 {
   cursor: pointer;
   transition: 0.3s;
   font-weight: 500;
-} */
+}
+   */
 
 /* .btn:hover {
   background: #1d4ed8;
-} */
+} 
+  */
 
 /* ================= INPUT FIELDS ================= */
 /* input,
@@ -160,14 +174,16 @@ textarea {
   margin-top: 5px;
   font-family: var(--sans);
   font-size: 14px;
-} */
+} 
+  */
 
 /* input:focus,
 select:focus,
 textarea:focus {
   outline: none;
   border-color: var(--accent);
-} */
+} 
+  */
 
 /* ================= LABEL ================= */
 /* label {
@@ -175,52 +191,61 @@ textarea:focus {
   color: var(--text-h);
   display: block;
   margin-top: 10px;
-} */
+}
+   */
 
 /* ================= GRID HELPERS ================= */
 /* .grid-2 {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 15px;
-} */
+}
+   */
 /* 
 .grid-3 {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   gap: 15px;
-} */
+} 
+  */
 
 /* ================= TABLE ================= */
 /* table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 15px;
-} */
+} 
+  */
 
 /* th,
 td {
   padding: 10px;
   border-bottom: 1px solid var(--border);
   text-align: left;
-} */
+}
+   */
 
 /* th {
   background: var(--accent-bg);
   color: var(--text-h);
-} */
+} 
+  */
 
 /* ================= UTILITIES ================= */
 /* .text-center {
   text-align: center;
-} */
+}
+   */
 
 /* .mt-2 {
   margin-top: 10px;
-} */ 
+} 
+  */ 
 
 /* .mt-4 {
   margin-top: 20px;
-} */
+}
+   */
 
 /* .mb-4 {
   margin-bottom: 20px;
