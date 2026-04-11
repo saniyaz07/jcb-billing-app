@@ -95,7 +95,8 @@
 
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5000/api';
+// const API_URL = 'https://jcb-billing-app.onrender.com';
+const API_URL = 'https://jcb-billing-app.onrender.com/api';
 
 const apiClient = axios.create({
   baseURL: API_URL,
