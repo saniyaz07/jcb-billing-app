@@ -915,3 +915,41 @@ input,
 select {
   transition: all 0.3s ease;
 }
+
+/* ================= PRINT STYLES ================= */
+@media print {
+
+  /* Hide everything */
+  body * {
+    visibility: hidden;
+  }
+
+  /* Show only bill */
+  .print-area, .print-area * {
+    visibility: visible;
+  }
+
+  .print-area {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+  }
+
+  /* Hide unwanted UI */
+  .no-print {
+    display: none !important;
+  }
+
+  /* Specifically hide sidebar/navbar */
+  .w-64,
+  nav,
+  header {
+    display: none !important;
+  }
+
+  /* Remove background for clean print */
+  body {
+    background: white !important;
+  }
+}
