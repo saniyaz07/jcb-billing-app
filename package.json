@@ -1,0 +1,14 @@
+{
+  "name": "jcb-billing-app-root",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "postinstall": "cd jcb-billing-backend && npm install",
+    "start": "node jcb-billing-backend/server.js",
+    "build": "cd jcb-billing && npm install && npm run build"
+  },
+  "engines": {
+    "node": ">=18.0.0 <24.0.0"
+  }
+}

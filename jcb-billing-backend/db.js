@@ -1,72 +1,30 @@
-// import pkg from 'pg';
-// import dotenv from 'dotenv';
-// dotenv.config();
-// const { Pool } = pkg;
-
-// const pool = new Pool({
-//   user: process.env.DB_USER,
-//   password: process.env.DB_PASSWORD,
-//   host: process.env.DB_HOST,
-//   port: process.env.DB_PORT,
-//   database: process.env.DB_NAME,
-// });
-
-// const testConnection = async () => {
-//   try {
-//     const client = await pool.connect();
-//     console.log('✅ Connected to PostgreSQL database');
-//     client.release();
-//   } catch (err) {
-//     console.error('❌ Database connection error:', err);
-//     process.exit(1);
-//   }
-// };
-
-// testConnection();
-// export default pool;
-
-// import pkg from 'pg';
-// const { Pool } = pkg;
-// import dotenv from 'dotenv';
-
-// dotenv.config();
-
-// const pool = new Pool({
-//   user: process.env.DB_USER,
-//   password: process.env.DB_PASSWORD,
-//   host: process.env.DB_HOST,
-//   port: process.env.DB_PORT,
-//   database: process.env.DB_NAME,
-// });
-
-// pool.connect()
-//   .then(() => console.log("✅ PostgreSQL Connected Successfully"))
-//   .catch(err => console.error("❌ DB Connection Failed:", err.message));
-
-// export default pool;
-
-// superbase , render
 import pkg from 'pg';
 const { Pool } = pkg;
 import dotenv from 'dotenv';
 
 dotenv.config();
 
-// const pool = new Pool({
-//   connectionString: process.env.DATABASE_URL,
-//   ssl: {
-//     rejectUnauthorized: false
-//   }
-// });
+// PostgreSQL Pool supporting DATABASE_URL (Supabase / Render) or individual environment variables
+const connectionString = process.env.DATABASE_URL || process.env.SUPABASE_DB_URL;
 
-import { createClient } from '@supabase/supabase-js'
+const poolConfig = connectionString
+  ? {
+      connectionString,
+      ssl: { rejectUnauthorized: false }
+    }
+  : {
+      user: process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
+      host: process.env.DB_HOST,
+      port: process.env.DB_PORT || 5432,
+      database: process.env.DB_NAME,
+      ssl: process.env.DB_HOST?.includes('supabase') ? { rejectUnauthorized: false } : false
+    };
 
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_KEY
-);
-pool.connect()
-  .then(() => console.log("✅ PostgreSQL Connected Successfully"))
-  .catch(err => console.error("❌ DB Connection Failed:", err.message));
+const pool = new Pool(poolConfig);
+
+pool.on('error', (err) => {
+  console.error('Unexpected error on idle PostgreSQL client:', err);
+});
 
 export default pool;

@@ -1,340 +1,8 @@
-// import { useState } from 'react';
-// import { useNavigate } from 'react-router-dom';
-// import BillForm from '../components/BillForm';
-// import { createBill } from '../services/api';
-// import { getBills, getCustomers } from '../services/api';  // Go up 1 level
-// export default function CreateBill() {
-//   const navigate = useNavigate();
-//   const [loading, setLoading] = useState(false);
-//   const [message, setMessage] = useState('');
-
-//   const handleSubmit = async (formData) => {
-//     setLoading(true);
-//     setMessage('');
-
-//     try {
-//       const response = await createBill(formData);
-//       setMessage('✅ Bill created successfully!');
-      
-//       // Redirect to bill preview after 2 seconds
-//       setTimeout(() => {
-//         navigate(`/bills/${response.data.id}`);
-//       }, 2000);
-//     } catch (error) {
-//       setMessage('❌ Error creating bill: ' + (error.response?.data?.error || error.message));
-//       console.error('Error:', error);
-//     }
-    
-//     setLoading(false);
-//   };
-
-//   return (
-//     <div className="min-h-screen bg-gray-50 py-8">
-//       <div className="max-w-4xl mx-auto px-4">
-//         <div className="mb-8">
-//           <h1 className="text-4xl font-bold text-gray-800 mb-2">📝 Create New Bill</h1>
-//           <p className="text-gray-600">Fill in the details below to generate a bill for your customer</p>
-//         </div>
-
-//         {message && (
-//           <div
-//             className={`p-4 mb-6 rounded-lg ${
-//               message.includes('✅') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-//             }`}
-//           >
-//             {message}
-//           </div>
-//         )}
-
-//         <BillForm onSubmit={handleSubmit} loading={loading} />
-//       </div>
-//     </div>
-//   );
-// }
-// import { useState, useEffect } from 'react';
-// import { useNavigate } from 'react-router-dom';
-// import BillForm from '../components/BillForm';
-// import { createBill, getCustomers, createCustomer } from '../services/api';
-
-// export default function CreateBill() {
-//   const navigate = useNavigate();
-//   const [loading, setLoading] = useState(false);
-//   const [message, setMessage] = useState('');
-//   const [customers, setCustomers] = useState([]);
-//   const [showAddCustomer, setShowAddCustomer] = useState(false);
-//   const [customerLoading, setCustomerLoading] = useState(false);
-//   const [customerMessage, setCustomerMessage] = useState('');
-//   const [totalHours, setTotalHours] = useState(8);
-  
-//   // Daily work entries
-//   const [workEntries, setWorkEntries] = useState([
-//     { date: new Date().toISOString().split('T')[0], hours: 8 }
-//   ]);
-
-//   const [newCustomer, setNewCustomer] = useState({
-//     name: '',
-//     address: '',
-//     phone: '',
-//     email: '',
-//   });
-
-//   // Fetch customers on load
-//   useEffect(() => {
-//     const loadCustomers = async () => {
-//       try {
-//         const response = await getCustomers();
-//         setCustomers(response.data || []);
-//       } catch (error) {
-//         console.error('Error loading customers:', error);
-//       }
-//     };
-//     loadCustomers();
-//   }, []);
-
-//   // Calculate total hours whenever work entries change
-//   useEffect(() => {
-//     const total = workEntries.reduce((sum, entry) => sum + parseFloat(entry.hours || 0), 0);
-//     setTotalHours(total);
-//   }, [workEntries]);
-
-//   // Add new work day
-//   const addWorkDay = () => {
-//     const lastDate = new Date(workEntries[workEntries.length - 1].date);
-//     const nextDate = new Date(lastDate);
-//     nextDate.setDate(nextDate.getDate() + 1);
-    
-//     setWorkEntries([
-//       ...workEntries,
-//       { date: nextDate.toISOString().split('T')[0], hours: 8 }
-//     ]);
-//   };
-
-//   // Remove work day
-//   const removeWorkDay = (index) => {
-//     if (workEntries.length > 1) {
-//       setWorkEntries(workEntries.filter((_, i) => i !== index));
-//     }
-//   };
-
-//   // Update work day
-//   const updateWorkDay = (index, field, value) => {
-//     const updated = [...workEntries];
-//     updated[index][field] = value;
-//     setWorkEntries(updated);
-//   };
-
-//   // Add customer
-//   const handleAddCustomer = async (e) => {
-//     e.preventDefault();
-    
-//     if (!newCustomer.name.trim()) {
-//       setCustomerMessage('❌ Name required');
-//       return;
-//     }
-
-//     setCustomerLoading(true);
-
-//     try {
-//       const response = await createCustomer(newCustomer);
-//       setCustomers([...customers, response.data]);
-//       setCustomerMessage('✅ Added!');
-//       setNewCustomer({ name: '', address: '', phone: '', email: '' });
-      
-//       setTimeout(() => {
-//         setShowAddCustomer(false);
-//         setCustomerMessage('');
-//       }, 1500);
-//     } catch (error) {
-//       setCustomerMessage('❌ Error');
-//       console.error(error);
-//     }
-
-//     setCustomerLoading(false);
-//   };
-
-//   const handleCustomerChange = (e) => {
-//     const { name, value } = e.target;
-//     setNewCustomer({ ...newCustomer, [name]: value });
-//   };
-
-//   const handleSubmit = async (formData) => {
-//     setLoading(true);
-//     setMessage('');
-
-//     try {
-//       const updatedData = {
-//         ...formData,
-//         hours_worked: totalHours,
-//       };
-
-//       const response = await createBill(updatedData);
-//       setMessage('✅ Bill created!');
-      
-//       setTimeout(() => {
-//         navigate(`/bills/${response.data.id}`);
-//       }, 2000);
-//     } catch (error) {
-//       setMessage('❌ Error: ' + error.message);
-//       console.error(error);
-//     }
-    
-//     setLoading(false);
-//   };
-
-//   return (
-//     <div className="min-h-screen bg-gray-50 py-8">
-//       <div className="max-w-4xl mx-auto px-4">
-//         <div className="mb-8">
-//           <h1 className="text-4xl font-bold text-gray-800 mb-2">📝 Create New Bill</h1>
-//           <p className="text-gray-600">Fill details to generate a bill</p>
-//         </div>
-
-//         {message && (
-//           <div className={`p-4 mb-6 rounded-lg ${message.includes('✅') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-//             {message}
-//           </div>
-//         )}
-
-//         {/* Daily Work Log */}
-//         <div className="bg-white p-6 rounded-lg shadow-lg mb-6">
-//           <div className="flex justify-between items-center mb-4">
-//             <h3 className="text-lg font-semibold">📅 Daily Work Log</h3>
-//             <button
-//               type="button"
-//               onClick={addWorkDay}
-//               className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm"
-//             >
-//               + Add Day
-//             </button>
-//           </div>
-
-//           <div className="space-y-3 mb-4">
-//             {workEntries.map((entry, index) => (
-//               <div key={index} className="flex gap-3 items-end">
-//                 <div className="flex-1">
-//                   <label className="text-xs font-medium block mb-1">Date</label>
-//                   <input
-//                     type="date"
-//                     value={entry.date}
-//                     onChange={(e) => updateWorkDay(index, 'date', e.target.value)}
-//                     className="w-full border border-gray-300 p-2 rounded text-sm"
-//                   />
-//                 </div>
-
-//                 <div className="flex-1">
-//                   <label className="text-xs font-medium block mb-1">Hours</label>
-//                   <input
-//                     type="number"
-//                     value={entry.hours}
-//                     onChange={(e) => updateWorkDay(index, 'hours', e.target.value)}
-//                     step="0.5"
-//                     min="0"
-//                     className="w-full border border-gray-300 p-2 rounded text-sm"
-//                   />
-//                 </div>
-
-//                 {workEntries.length > 1 && (
-//                   <button
-//                     type="button"
-//                     onClick={() => removeWorkDay(index)}
-//                     className="bg-red-600 text-white px-3 py-2 rounded text-sm hover:bg-red-700"
-//                   >
-//                     🗑️
-//                   </button>
-//                 )}
-//               </div>
-//             ))}
-//           </div>
-
-//           <div className="p-3 bg-blue-50 rounded border border-blue-200">
-//             <p className="text-sm"><strong>Total Hours:</strong> <span className="text-blue-600 font-bold">{totalHours.toFixed(1)}</span> hrs</p>
-//           </div>
-//         </div>
-
-//         {/* Add Customer */}
-//         <div className="bg-white p-6 rounded-lg shadow-lg mb-6">
-//           <div className="flex justify-between items-center mb-4">
-//             <h3 className="text-lg font-semibold">👤 Add Customer</h3>
-//             <button
-//               type="button"
-//               onClick={() => setShowAddCustomer(!showAddCustomer)}
-//               className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 text-sm"
-//             >
-//               {showAddCustomer ? '✕ Close' : '+ Add'}
-//             </button>
-//           </div>
-
-//           {customerMessage && (
-//             <div className={`p-3 mb-4 rounded text-sm ${customerMessage.includes('✅') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-//               {customerMessage}
-//             </div>
-//           )}
-
-//           {showAddCustomer && (
-//             <form onSubmit={handleAddCustomer} className="space-y-3 mb-4 p-4 bg-green-50 rounded">
-//               <input
-//                 type="text"
-//                 name="name"
-//                 placeholder="Customer name *"
-//                 value={newCustomer.name}
-//                 onChange={handleCustomerChange}
-//                 className="w-full border border-gray-300 p-2 rounded text-sm"
-//                 required
-//               />
-
-//               <input
-//                 type="tel"
-//                 name="phone"
-//                 placeholder="Phone"
-//                 value={newCustomer.phone}
-//                 onChange={handleCustomerChange}
-//                 className="w-full border border-gray-300 p-2 rounded text-sm"
-//               />
-
-//               <input
-//                 type="text"
-//                 name="address"
-//                 placeholder="Address"
-//                 value={newCustomer.address}
-//                 onChange={handleCustomerChange}
-//                 className="w-full border border-gray-300 p-2 rounded text-sm"
-//               />
-
-//               <input
-//                 type="email"
-//                 name="email"
-//                 placeholder="Email"
-//                 value={newCustomer.email}
-//                 onChange={handleCustomerChange}
-//                 className="w-full border border-gray-300 p-2 rounded text-sm"
-//               />
-
-//               <button
-//                 type="submit"
-//                 disabled={customerLoading}
-//                 className="w-full bg-green-600 text-white py-2 rounded text-sm hover:bg-green-700 disabled:opacity-50"
-//               >
-//                 {customerLoading ? 'Adding...' : 'Add Customer'}
-//               </button>
-//             </form>
-//           )}
-
-//           <div className="text-xs text-gray-600">
-//             <p className="font-semibold mb-2">Customers: {customers.length}</p>
-//           </div>
-//         </div>
-
-//         {/* Bill Form */}
-//         <BillForm onSubmit={handleSubmit} loading={loading} />
-//       </div>
-//     </div>
-//   );
-// }
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import BillForm from '../components/BillForm';
 import { createBill, getCustomers, createCustomer } from '../services/api';
+import { Calendar, PlusCircle, Trash2, Users, FileText, AlertCircle, CheckCircle2, Clock } from 'lucide-react';
 
 export default function CreateBill() {
   const navigate = useNavigate();
@@ -344,23 +12,24 @@ export default function CreateBill() {
   const [showAddCustomer, setShowAddCustomer] = useState(false);
   const [totalHours, setTotalHours] = useState(8);
 
-  // Daily work entries
+  // Daily work entries with min 0 hours protection
   const [workEntries, setWorkEntries] = useState([
-    { date: new Date().toISOString().split('T')[0], hours: 8 }
+    { date: new Date().toISOString().split('T')[0], hours: 8, startTime: '09:00', endTime: '17:00' }
   ]);
 
-  // Minimal customer (ONLY name + phone)
+  // Minimal customer form
   const [newCustomer, setNewCustomer] = useState({
     name: '',
     phone: '',
   });
 
-  // Fetch customers
+  // Fetch customers on load
   useEffect(() => {
     const loadCustomers = async () => {
       try {
         const response = await getCustomers();
-        setCustomers(response.data || []);
+        const list = Array.isArray(response.data) ? response.data : response.data?.data || [];
+        setCustomers(list);
       } catch (error) {
         console.error('Error loading customers:', error);
       }
@@ -368,65 +37,89 @@ export default function CreateBill() {
     loadCustomers();
   }, []);
 
-  // Calculate total hours
+  // Calculate total hours - non-negative validation
   useEffect(() => {
-    const total = workEntries.reduce((sum, entry) => sum + parseFloat(entry.hours || 0), 0);
-    setTotalHours(total);
+    const total = workEntries.reduce((sum, entry) => {
+      const h = parseFloat(entry.hours || 0);
+      return sum + (h > 0 ? h : 0);
+    }, 0);
+    setTotalHours(Math.max(0, total));
   }, [workEntries]);
 
-  // Add work day
-  // const addWorkDay = () => {
-  //   setWorkEntries([...workEntries, { date: '', hours: 8 }]);
-  // };
-const addWorkDay = () => {
-  let nextDate;
+  // Add work day entry
+  const addWorkDay = () => {
+    let nextDate;
+    if (workEntries.length === 0) {
+      nextDate = new Date();
+    } else {
+      const last = new Date(workEntries[workEntries.length - 1].date || new Date());
+      if (isNaN(last.getTime())) {
+        nextDate = new Date();
+      } else {
+        last.setDate(last.getDate() + 1);
+        nextDate = last;
+      }
+    }
 
-  if (workEntries.length === 0) {
-    // first entry → today
-    nextDate = new Date();
-  } else {
-    // get last date and add 1 day
-    const lastDate = new Date(workEntries[workEntries.length - 1].date);
-    lastDate.setDate(lastDate.getDate() + 1);
-    nextDate = lastDate;
-  }
+    const formattedDate = nextDate.toISOString().split('T')[0];
 
-  const formattedDate = nextDate.toISOString().split('T')[0];
+    setWorkEntries([
+      ...workEntries,
+      { date: formattedDate, hours: 8, startTime: '09:00', endTime: '17:00' }
+    ]);
+  };
 
-  setWorkEntries([
-    ...workEntries,
-    { date: formattedDate, hours: 0 }
-  ]);
-};
-
-
-  // Remove work day
+  // Remove work day entry
   const removeWorkDay = (index) => {
     if (workEntries.length > 1) {
       setWorkEntries(workEntries.filter((_, i) => i !== index));
     }
   };
 
-  // Update work day
+  // Update work day entry with min 0 hours validation
   const updateWorkDay = (index, field, value) => {
     const updated = [...workEntries];
-    updated[index][field] = value;
+
+    if (field === 'hours') {
+      const val = parseFloat(value);
+      updated[index][field] = isNaN(val) ? 0 : Math.max(0, val);
+    } else if (field === 'startTime' || field === 'endTime') {
+      updated[index][field] = value;
+      const start = updated[index].startTime;
+      const end = updated[index].endTime;
+
+      if (start && end) {
+        const startDate = new Date(`1970-01-01T${start}`);
+        const endDate = new Date(`1970-01-01T${end}`);
+        let diffHours = (endDate - startDate) / (1000 * 60 * 60);
+
+        // If end time is earlier than start time, set diff to 0 (minimum 0 hours)
+        if (isNaN(diffHours) || diffHours < 0) {
+          diffHours = 0;
+        }
+
+        updated[index].hours = Math.max(0, diffHours);
+      }
+    } else {
+      updated[index][field] = value;
+    }
+
     setWorkEntries(updated);
   };
 
-  // Add customer
+  // Add new customer inline
   const handleAddCustomer = async (e) => {
     e.preventDefault();
-
     if (!newCustomer.name.trim()) return;
 
     try {
       const response = await createCustomer(newCustomer);
-      setCustomers([...customers, response.data]);
+      const created = response.data;
+      setCustomers((prev) => [...prev, created]);
       setNewCustomer({ name: '', phone: '' });
       setShowAddCustomer(false);
     } catch (error) {
-      console.error(error);
+      console.error('Error adding customer:', error);
     }
   };
 
@@ -435,134 +128,269 @@ const addWorkDay = () => {
     setNewCustomer({ ...newCustomer, [name]: value });
   };
 
-  // Submit bill (UNCHANGED connection)
+  // Submit bill with comprehensive client-side validations
   const handleSubmit = async (formData) => {
-  // ✅ ADD THIS CHECK
-  if (!formData.customer_id) {
-    setMessage('❌ Please select a customer first!');
-    return;
-  }
+    // 1. Required field validations
+    if (!formData.customer_name && !formData.customer_id) {
+      setMessage('❌ Please select or enter a Customer Name!');
+      return;
+    }
 
-  setLoading(true);
-  setMessage('');
+    if (!formData.site_location || !formData.site_location.trim()) {
+      setMessage('❌ Site Name / Location is required!');
+      return;
+    }
 
-  try {
-    const updatedData = {
-      ...formData,
-      hours_worked: totalHours,
-    };
+    if (!formData.hourly_rate || parseFloat(formData.hourly_rate) <= 0) {
+      setMessage('❌ Hourly Rate must be greater than ₹0!');
+      return;
+    }
 
-    const response = await createBill(updatedData);
-    setMessage('✅ Bill created!');
-    
-    setTimeout(() => {
-      navigate(`/bills/${response.data.id}`);
-    }, 1500);
+    if (!formData.bill_date) {
+      setMessage('❌ Invoice Bill Date is required!');
+      return;
+    }
 
-  } catch (error) {
-    setMessage('❌ Error: ' + error.message);
-    console.error(error);
-  }
+    // 2. Non-negative validations
+    if (totalHours < 0 || (formData.hours_worked !== undefined && parseFloat(formData.hours_worked) < 0)) {
+      setMessage('❌ Total Work Hours cannot be negative!');
+      return;
+    }
 
-  setLoading(false);
-};
+    const subtotal =
+      parseFloat(formData.hours_worked || 0) * parseFloat(formData.hourly_rate || 0) +
+      Math.max(0, parseFloat(formData.operator_charge || 0)) +
+      Math.max(0, parseFloat(formData.fuel_charge || 0)) +
+      Math.max(0, parseFloat(formData.transport_charge || 0));
+
+    const gst = formData.include_gst ? subtotal * 0.18 : 0;
+    const grandTotal = subtotal + gst;
+
+    if (grandTotal < 0) {
+      setMessage('❌ Grand Total cannot be negative!');
+      return;
+    }
+
+    setLoading(true);
+    setMessage('');
+
+    try {
+      const payload = {
+        ...formData,
+        hours_worked: Math.max(0, totalHours),
+        hourly_rate: Math.max(0, parseFloat(formData.hourly_rate || 0)),
+        operator_charge: Math.max(0, parseFloat(formData.operator_charge || 0)),
+        fuel_charge: Math.max(0, parseFloat(formData.fuel_charge || 0)),
+        transport_charge: Math.max(0, parseFloat(formData.transport_charge || 0)),
+        subtotal: Math.max(0, subtotal),
+        gst_amount: Math.max(0, gst),
+        total_amount: Math.max(0, grandTotal),
+        work_log: workEntries,
+      };
+
+      const response = await createBill(payload);
+      setMessage('✅ Bill created successfully!');
+
+      setTimeout(() => {
+        if (response?.data?.id) {
+          navigate(`/bills/${response.data.id}`);
+        } else {
+          navigate('/bills');
+        }
+      }, 1500);
+    } catch (error) {
+      const serverErr = error.response?.data?.error || error.message || 'Failed to submit bill';
+      setMessage('❌ Server Error: ' + serverErr);
+      console.error('Submit Error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-4xl mx-auto px-4">
+    <div className="max-w-4xl mx-auto p-6 md:p-8 space-y-6">
+      {/* Header */}
+      <div className="flex items-center gap-3">
+        <div className="p-2 bg-blue-50 text-blue-600 rounded-xl border border-blue-100">
+          <FileText className="w-6 h-6" />
+        </div>
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight">
+            Create New Bill
+          </h1>
+          <p className="text-slate-500 text-sm">
+            Fill in job details to generate an itemized JCB billing statement
+          </p>
+        </div>
+      </div>
 
-        <h1 className="text-3xl font-bold mb-6">📝 Create Bill</h1>
+      {/* Message Alert */}
+      {message && (
+        <div
+          className={`p-4 rounded-xl border text-sm flex items-center gap-3 ${
+            message.startsWith('❌')
+              ? 'bg-rose-50 border-rose-200 text-rose-800 font-medium'
+              : 'bg-emerald-50 border-emerald-200 text-emerald-800 font-medium'
+          }`}
+        >
+          {message.startsWith('❌') ? (
+            <AlertCircle className="w-5 h-5 text-rose-600 shrink-0" />
+          ) : (
+            <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+          )}
+          <span>{message}</span>
+        </div>
+      )}
 
-        {message && (
-          <div className="p-3 mb-4 rounded bg-gray-200">
-            {message}
+      {/* Daily Work Log Card */}
+      <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div className="flex items-center gap-2 font-bold text-slate-900 text-base">
+            <Calendar className="w-4 h-4 text-blue-600" />
+            <span>Daily Work Log Breakdown</span>
           </div>
-        )}
+          <button
+            type="button"
+            onClick={addWorkDay}
+            className="inline-flex items-center gap-1.5 bg-blue-600 text-white font-semibold text-xs px-3 py-1.5 rounded-lg hover:bg-blue-700 transition"
+          >
+            <PlusCircle className="w-3.5 h-3.5" />
+            Add Work Day
+          </button>
+        </div>
 
-        {/* Daily Work Log */}
-        <div className="bg-white p-5 rounded shadow mb-6">
-          <div className="flex justify-between mb-3">
-            <h3 className="font-semibold">📅 Daily Work Log</h3>
-            <button onClick={addWorkDay} className="bg-blue-600 text-white px-3 py-1 rounded">
-              + Add Day
-            </button>
-          </div>
-
+        <div className="space-y-3">
           {workEntries.map((entry, index) => (
-            <div key={index} className="flex gap-3 mb-2">
-              <input
-                type="date"
-                value={entry.date}
-                onChange={(e) => updateWorkDay(index, 'date', e.target.value)}
-                className="border p-2 rounded w-full"
-              />
-              <input
-                type="number"
-                value={entry.hours}
-                onChange={(e) => updateWorkDay(index, 'hours', e.target.value)}
-                className="border p-2 rounded w-full"
-              />
+            <div key={index} className="flex flex-col sm:flex-row items-end gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200/60">
+              <div className="flex-1 w-full">
+                <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                  Work Date #{index + 1}
+                </label>
+                <input
+                  type="date"
+                  value={entry.date}
+                  onChange={(e) => updateWorkDay(index, 'date', e.target.value)}
+                  className="w-full border border-slate-200 p-2 rounded-lg text-xs bg-white focus:outline-none focus:border-blue-500"
+                />
+              </div>
+
+              <div className="w-full sm:w-32">
+                <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                  Start Time
+                </label>
+                <input
+                  type="time"
+                  value={entry.startTime || '09:00'}
+                  onChange={(e) => updateWorkDay(index, 'startTime', e.target.value)}
+                  className="w-full border border-slate-200 p-2 rounded-lg text-xs bg-white focus:outline-none focus:border-blue-500"
+                />
+              </div>
+
+              <div className="w-full sm:w-32">
+                <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                  End Time
+                </label>
+                <input
+                  type="time"
+                  value={entry.endTime || '17:00'}
+                  onChange={(e) => updateWorkDay(index, 'endTime', e.target.value)}
+                  className="w-full border border-slate-200 p-2 rounded-lg text-xs bg-white focus:outline-none focus:border-blue-500"
+                />
+              </div>
+
+              <div className="w-full sm:w-32">
+                <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                  Hours (Min 0)
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.5"
+                  value={entry.hours}
+                  onChange={(e) => updateWorkDay(index, 'hours', e.target.value)}
+                  className="w-full border border-slate-200 p-2 rounded-lg text-xs font-bold bg-white text-slate-900 focus:outline-none focus:border-blue-500"
+                />
+              </div>
+
               {workEntries.length > 1 && (
-                <button onClick={() => removeWorkDay(index)} className="bg-red-500 text-white px-2 rounded">
-                  X
+                <button
+                  type="button"
+                  onClick={() => removeWorkDay(index)}
+                  className="p-2 text-rose-600 hover:bg-rose-50 rounded-lg transition shrink-0"
+                  title="Delete work day"
+                >
+                  <Trash2 className="w-4 h-4" />
                 </button>
               )}
             </div>
           ))}
-
-          <p className="mt-2 font-semibold">Total Hours: {totalHours}</p>
         </div>
 
-        {/* Add Customer */}
-        <div className="bg-white p-5 rounded shadow mb-6">
-          <div className="flex justify-between mb-3">
-            <h3 className="font-semibold">👤 Add Customer</h3>
-            <button
-              onClick={() => setShowAddCustomer(!showAddCustomer)}
-              className="bg-green-600 text-white px-3 py-1 rounded"
-            >
-              {showAddCustomer ? 'Close' : '+ Add'}
-            </button>
+        <div className="p-3 bg-blue-50/70 border border-blue-100 rounded-xl flex items-center justify-between text-xs text-blue-900 font-medium">
+          <div className="flex items-center gap-2">
+            <Clock className="w-4 h-4 text-blue-600" />
+            <span>Calculated Total Work Hours:</span>
           </div>
+          <span className="font-extrabold text-sm text-blue-700">{totalHours.toFixed(1)} hrs</span>
+        </div>
+      </div>
 
-          {showAddCustomer && (
-            <form onSubmit={handleAddCustomer} className="space-y-2">
+      {/* Add New Customer Card */}
+      <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 font-bold text-slate-900 text-base">
+            <Users className="w-4 h-4 text-emerald-600" />
+            <span>Register New Customer (Optional)</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowAddCustomer(!showAddCustomer)}
+            className="inline-flex items-center gap-1.5 bg-emerald-600 text-white font-semibold text-xs px-3 py-1.5 rounded-lg hover:bg-emerald-700 transition"
+          >
+            {showAddCustomer ? 'Close' : '+ Add Client'}
+          </button>
+        </div>
+
+        {showAddCustomer && (
+          <form onSubmit={handleAddCustomer} className="space-y-3 p-4 bg-emerald-50/60 rounded-xl border border-emerald-100">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <input
                 type="text"
                 name="name"
-                placeholder="Customer Name"
+                placeholder="Customer / Company Name *"
                 value={newCustomer.name}
                 onChange={handleCustomerChange}
-                className="border p-2 rounded w-full"
+                className="w-full border border-slate-200 p-2.5 rounded-xl text-xs bg-white focus:outline-none focus:border-emerald-500"
                 required
               />
               <input
-                type="text"
+                type="tel"
                 name="phone"
-                placeholder="Phone"
+                placeholder="Phone Number"
                 value={newCustomer.phone}
                 onChange={handleCustomerChange}
-                className="border p-2 rounded w-full"
+                className="w-full border border-slate-200 p-2.5 rounded-xl text-xs bg-white focus:outline-none focus:border-emerald-500"
               />
-              <button className="bg-green-600 text-white w-full py-2 rounded">
-                Save Customer
-              </button>
-            </form>
-          )}
-        </div>
-
-        {/* Bill Form */}
-        {/* <BillForm onSubmit={handleSubmit} loading={loading} /> */}
-            <BillForm 
-      onSubmit={handleSubmit} 
-      loading={loading} 
-      totalHours={totalHours}
-      workEntries={workEntries} 
-      customers={customers}         // ✅ ADD THIS
-  selectedCustomerId={null} 
-    />
-
+            </div>
+            <button
+              type="submit"
+              className="w-full bg-emerald-600 text-white font-semibold text-xs py-2 rounded-xl hover:bg-emerald-700 transition"
+            >
+              Save & Auto Select Customer
+            </button>
+          </form>
+        )}
       </div>
+
+      {/* Main Bill Form */}
+      <BillForm
+        onSubmit={handleSubmit}
+        loading={loading}
+        totalHours={totalHours}
+        workEntries={workEntries}
+        customers={customers}
+        selectedCustomerId={null}
+      />
     </div>
   );
 }
