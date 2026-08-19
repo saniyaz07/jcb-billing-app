@@ -1,134 +1,13 @@
-// import { useState, useEffect } from 'react';
-// import { useParams } from 'react-router-dom';
-// import BillPreview from '../components/BillPreview';
-// import { getBillById, getBusiness } from '../services/api';
-// import { getBills, getCustomers } from '../services/api';  // Go up 1 level
-// export default function ViewBill() {
-//   const { id } = useParams();
-//   const [bill, setBill] = useState(null);
-//   const [business, setBusiness] = useState(null);
-//   const [loading, setLoading] = useState(true);
-
-//   useEffect(() => {
-//     fetchBillData();
-//   }, [id]);
-
-//   const fetchBillData = async () => {
-//     setLoading(true);
-//     try {
-//       const billResponse = await getBillById(id);
-//       const businessResponse = await getBusiness();
-//       setBill(billResponse.data);
-//       setBusiness(businessResponse.data);
-//     } catch (error) {
-//       console.error('Error loading bill:', error);
-//     }
-//     setLoading(false);
-//   };
-
-//   if (loading) {
-//     return (
-//       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-//         <div className="text-center">
-//           <p className="text-xl text-gray-600">⏳ Loading bill...</p>
-//         </div>
-//       </div>
-//     );
-//   }
-
-//   if (!bill) {
-//     return (
-//       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-//         <div className="text-center">
-//           <p className="text-xl text-gray-600 mb-4">❌ Bill not found</p>
-//           <a href="/bills" className="text-blue-600 hover:text-blue-800 font-semibold">
-//             ← Back to Bills
-//           </a>
-//         </div>
-//       </div>
-//     );
-//   }
-
-//   return (
-//     <div className="min-h-screen bg-gray-50 py-8">
-//       <div className="max-w-4xl mx-auto px-4">
-//         <BillPreview bill={bill} customer={bill} business={business} />
-//       </div>
-//     </div>
-//   );
-// }
-
-// import { useState, useEffect } from 'react';
-// import { useParams } from 'react-router-dom';
-// import BillPreview from '../components/BillPreview';
-// import { getBillById, getBusiness } from '../services/api';
-
-// export default function ViewBill() {
-//   const { id } = useParams();
-//   const [bill, setBill] = useState(null);
-//   const [business, setBusiness] = useState(null);
-//   const [loading, setLoading] = useState(true);
-
-//   useEffect(() => {
-//     fetchBillData();
-//   }, [id]);
-
-//   const fetchBillData = async () => {
-//     setLoading(true);
-//     try {
-//       const billResponse = await getBillById(id);
-//       const businessResponse = await getBusiness();
-
-//       console.log("Bill:", billResponse.data);
-
-//       setBill(billResponse.data); // adjust if needed
-//       setBusiness(businessResponse.data);
-//     } catch (error) {
-//       console.error('Error loading bill:', error);
-//     }
-//     setLoading(false);
-//   };
-
-//   if (loading) {
-//     return <p>Loading...</p>;
-//   }
-
-//   if (!bill) {
-//     return <p>Bill not found</p>;
-//   }
-
-//   return (
-//     <div>
-//       {bill && business && (
-//         // <BillPreview 
-//         //   bill={bill} 
-//         //   customer={bill.customer} 
-//         //   business={business} 
-//         // />
-//         <BillPreview 
-//           bill={bill} 
-//           customer={{
-//             name: bill.customer_name,
-//             phone: bill.phone,
-//             address: bill.address,
-//             email: bill.email
-//           }}
-//           business={business} 
-//         />
-//       )}
-//     </div>
-//   );
-// }
-
-
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import BillPreview from '../components/BillPreview';
 import { getBillById, getBusiness, updateBill, getCustomers } from '../services/api';
+import { ArrowLeft, Pencil, Save, XCircle, CheckCircle2 } from 'lucide-react';
 
 export default function ViewBill() {
   const { id } = useParams();
   const navigate = useNavigate();
+
   const [bill, setBill] = useState(null);
   const [business, setBusiness] = useState(null);
   const [customers, setCustomers] = useState([]);
@@ -136,360 +15,333 @@ export default function ViewBill() {
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState('');
-  
-  // Edit form data
+
   const [editData, setEditData] = useState({
     customer_id: '',
+    customer_name: '',
+    customer_phone: '',
+    site_location: 'Rachana',
+    company_name: 'A.B.S. ASHRAF SHEIKH',
+    company_tagline: 'Available JCB, TIPPER & EARTH MOVERS - I.B.M. Road, Gittikhadan, Katol Road, Nagpur',
+    company_phone: '9371775288, 9970434903',
+    bill_number: '',
     bill_date: '',
     service_date: '',
-    jcb_type: '',
-    hours_worked: '',
-    hourly_rate: '',
-    operator_charge: '',
-    fuel_charge: '',
-    transport_charge: '',
+    jcb_type: 'JCB 3DX Super',
+    hours_worked: 8,
+    hourly_rate: 500,
+    operator_bhatta_rate_per_day: 200,
+    operator_bhatta_days: 1,
+    operator_charge: 200,
+    fuel_charge: 0,
+    transport_charge: 0,
     notes: '',
-    payment_status: 'Pending'
+    payment_status: 'Pending',
   });
 
   useEffect(() => {
     fetchBillData();
+    fetchCustomers();
   }, [id]);
 
   const fetchBillData = async () => {
     setLoading(true);
     try {
-      const billResponse = await getBillById(id);
-      const businessResponse = await getBusiness();
-      const customersResponse = await getCustomers();
+      const [billRes, bizRes] = await Promise.all([
+        getBillById(id),
+        getBusiness(),
+      ]);
 
-      console.log("Bill:", billResponse.data);
+      const billData = billRes.data || {};
+      const bizData = bizRes.data || {};
 
-      setBill(billResponse.data);
-      setBusiness(businessResponse.data);
-      setCustomers(customersResponse.data || []);
+      setBill(billData);
+      setBusiness(bizData);
 
-      // Initialize edit form with bill data
+      const days = billData.operator_bhatta_days || (billData.work_log && billData.work_log.length > 0 ? billData.work_log.length : 1);
+      const rate = billData.operator_bhatta_rate_per_day !== undefined ? parseFloat(billData.operator_bhatta_rate_per_day) : 200;
+
       setEditData({
-        customer_id: billResponse.data.customer_id || '',
-        bill_date: billResponse.data.bill_date || '',
-        service_date: billResponse.data.service_date || '',
-        jcb_type: billResponse.data.jcb_type || '',
-        hours_worked: billResponse.data.hours_worked || '',
-        hourly_rate: billResponse.data.hourly_rate || '',
-        operator_charge: billResponse.data.operator_charge || '0',
-        fuel_charge: billResponse.data.fuel_charge || '0',
-        transport_charge: billResponse.data.transport_charge || '0',
-        notes: billResponse.data.notes || '',
-        payment_status: billResponse.data.payment_status || 'Pending'
+        customer_id: billData.customer_id || '',
+        customer_name: billData.customer_name || '',
+        customer_phone: billData.customer_phone || billData.phone || '',
+        site_location: billData.site_location || 'Rachana',
+        company_name: billData.company_name || bizData.company_name || 'A.B.S. ASHRAF SHEIKH',
+        company_tagline: billData.company_tagline || bizData.company_tagline || '',
+        company_phone: billData.company_phone || bizData.phone || '9371775288, 9970434903',
+        bill_number: billData.bill_number || '',
+        bill_date: billData.bill_date ? new Date(billData.bill_date).toISOString().split('T')[0] : '',
+        service_date: billData.service_date ? new Date(billData.service_date).toISOString().split('T')[0] : '',
+        jcb_type: billData.jcb_type || 'JCB 3DX Super',
+        hours_worked: billData.hours_worked || 0,
+        hourly_rate: billData.hourly_rate || 500,
+        operator_bhatta_rate_per_day: rate,
+        operator_bhatta_days: days,
+        operator_charge: billData.operator_charge !== undefined ? billData.operator_charge : (days * rate),
+        fuel_charge: billData.fuel_charge || 0,
+        transport_charge: billData.transport_charge || 0,
+        notes: billData.notes || '',
+        payment_status: billData.payment_status || 'Pending',
       });
     } catch (error) {
       console.error('Error loading bill:', error);
-      setMessage('❌ Error loading bill');
+      setMessage('Error loading bill details');
     }
     setLoading(false);
   };
 
+  const fetchCustomers = async () => {
+    try {
+      const res = await getCustomers();
+      setCustomers(Array.isArray(res.data) ? res.data : res.data?.data || []);
+    } catch (err) {
+      console.error('Error fetching customers:', err);
+    }
+  };
+
   const handleEditChange = (e) => {
     const { name, value } = e.target;
-    setEditData({
-      ...editData,
-      [name]: value
+    setEditData((prev) => {
+      const updated = { ...prev, [name]: value };
+      if (name === 'operator_bhatta_rate_per_day' || name === 'operator_bhatta_days') {
+        const r = parseFloat(name === 'operator_bhatta_rate_per_day' ? value : updated.operator_bhatta_rate_per_day) || 0;
+        const d = parseFloat(name === 'operator_bhatta_days' ? value : updated.operator_bhatta_days) || 0;
+        updated.operator_charge = Math.max(0, r * d);
+      }
+      return updated;
     });
   };
 
-  const handleSave = async () => {
+  const handleSave = async (e) => {
+    e.preventDefault();
     setIsSaving(true);
     setMessage('');
 
-    try {
-      // Validate required fields
-      if (!editData.customer_id) {
-        setMessage('❌ Customer is required');
-        setIsSaving(false);
-        return;
-      }
+    const hours = Math.max(0, parseFloat(editData.hours_worked || 0));
+    const rate = Math.max(0, parseFloat(editData.hourly_rate || 0));
+    const opCharge = Math.max(0, parseFloat(editData.operator_charge || 0));
+    const fuel = Math.max(0, parseFloat(editData.fuel_charge || 0));
+    const transport = Math.max(0, parseFloat(editData.transport_charge || 0));
 
-      const updatePayload = {
-        bill_number: bill.bill_number, // Keep original bill number
-        customer_id: parseInt(editData.customer_id),
-        bill_date: editData.bill_date,
-        service_date: editData.service_date,
-        jcb_type: editData.jcb_type,
-        hours_worked: parseFloat(editData.hours_worked),
-        hourly_rate: parseFloat(editData.hourly_rate),
-        operator_charge: parseFloat(editData.operator_charge) || 0,
-        fuel_charge: parseFloat(editData.fuel_charge) || 0,
-        transport_charge: parseFloat(editData.transport_charge) || 0,
-        notes: editData.notes,
-        payment_status: editData.payment_status
+    const subtotal = (hours * rate) + opCharge + fuel + transport;
+    const gst = bill?.gst_amount > 0 ? subtotal * 0.18 : 0;
+    const total = subtotal + gst;
+
+    try {
+      const payload = {
+        ...editData,
+        hours_worked: hours,
+        hourly_rate: rate,
+        operator_charge: opCharge,
+        fuel_charge: fuel,
+        transport_charge: transport,
+        subtotal,
+        gst_amount: gst,
+        total_amount: total,
       };
 
-      await updateBill(id, updatePayload);
+      await updateBill(id, payload);
       setMessage('✅ Bill updated successfully!');
       setIsEditing(false);
-      
-      // Refresh bill data
-      setTimeout(() => {
-        fetchBillData();
-      }, 1000);
-    } catch (error) {
-      console.error('Error updating bill:', error);
-      setMessage(`❌ Error: ${error.response?.data?.message || error.message}`);
-    } finally {
-      setIsSaving(false);
+      await fetchBillData();
+    } catch (err) {
+      console.error('Error updating bill:', err);
+      setMessage('❌ Error saving bill changes: ' + err.message);
     }
+    setIsSaving(false);
   };
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <p className="text-gray-600 text-lg">⏳ Loading bill...</p>
+      <div className="max-w-4xl mx-auto p-12 text-center text-slate-500 font-medium">
+        Loading invoice details...
       </div>
     );
   }
 
   if (!bill) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="text-center">
-          <p className="text-gray-600 text-lg mb-4">Bill not found</p>
-          <button
-            onClick={() => navigate('/bills')}
-            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
-          >
-            Back to Bills
-          </button>
-        </div>
+      <div className="max-w-4xl mx-auto p-12 text-center space-y-4">
+        <p className="text-slate-700 font-bold text-lg">Invoice not found</p>
+        <button
+          onClick={() => navigate('/bills')}
+          className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-semibold rounded-xl text-sm"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back to Bills List
+        </button>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-6">
-      <div className="max-w-6xl mx-auto px-4">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">📄 Bill #{bill.bill_number}</h1>
-          <div className="flex gap-2">
-            {!isEditing && (
-              <>
-                <button
-                  onClick={() => setIsEditing(true)}
-                  className="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600 transition"
-                >
-                  ✏️ Edit
-                </button>
-                <button
-                  onClick={() => navigate('/bills')}
-                  className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition"
-                >
-                  ← Back
-                </button>
-              </>
-            )}
-          </div>
+    <div className="max-w-4xl mx-auto p-6 md:p-8 space-y-6">
+      {/* Header Bar (STRICTLY HIDDEN IN PRINT PREVIEW TO PREVENT HEADER LEAKS) */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 no-print border-b border-slate-200 pb-4">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">
+            Invoice #{bill.bill_number}
+          </h1>
+          <p className="text-slate-500 text-xs mt-0.5">
+            View, edit, or print A4 invoice statement
+          </p>
         </div>
 
-        {/* Message */}
-        {message && (
-          <div className={`mb-4 p-3 rounded border ${
-            message.includes('✅') 
-              ? 'bg-green-50 border-green-200 text-green-800' 
-              : 'bg-red-50 border-red-200 text-red-800'
-          }`}>
-            {message}
-          </div>
-        )}
-
-        {/* Edit Mode */}
-        {isEditing ? (
-          <div className="bg-white p-6 rounded-lg shadow mb-6">
-            <h2 className="text-2xl font-bold mb-6">Edit Bill Details</h2>
-
-            <form className="space-y-4">
-              {/* Customer Selection */}
-              <div>
-                <label className="block text-sm font-semibold mb-2">Customer *</label>
-                <select
-                  name="customer_id"
-                  value={editData.customer_id}
-                  onChange={handleEditChange}
-                  className="w-full border p-3 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  required
-                >
-                  <option value="">Select Customer</option>
-                  {customers.map(c => (
-                    <option key={c.id} value={c.id}>
-                      {c.name} - {c.phone}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Dates */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-semibold mb-2">Bill Date</label>
-                  <input
-                    type="date"
-                    name="bill_date"
-                    value={editData.bill_date}
-                    onChange={handleEditChange}
-                    className="w-full border p-3 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold mb-2">Service Date</label>
-                  <input
-                    type="date"
-                    name="service_date"
-                    value={editData.service_date}
-                    onChange={handleEditChange}
-                    className="w-full border p-3 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-              </div>
-
-              {/* JCB Type */}
-              <div>
-                <label className="block text-sm font-semibold mb-2">JCB Type</label>
-                <input
-                  type="text"
-                  name="jcb_type"
-                  placeholder="e.g., JCB 3DX"
-                  value={editData.jcb_type}
-                  onChange={handleEditChange}
-                  className="w-full border p-3 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              {/* Hours and Rate */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-semibold mb-2">Hours Worked</label>
-                  <input
-                    type="number"
-                    name="hours_worked"
-                    step="0.5"
-                    value={editData.hours_worked}
-                    onChange={handleEditChange}
-                    className="w-full border p-3 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold mb-2">Hourly Rate (₹)</label>
-                  <input
-                    type="number"
-                    name="hourly_rate"
-                    step="0.01"
-                    value={editData.hourly_rate}
-                    onChange={handleEditChange}
-                    className="w-full border p-3 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-              </div>
-
-              {/* Charges */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-semibold mb-2">Operator Charge (₹)</label>
-                  <input
-                    type="number"
-                    name="operator_charge"
-                    step="0.01"
-                    value={editData.operator_charge}
-                    onChange={handleEditChange}
-                    className="w-full border p-3 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold mb-2">Fuel Charge (₹)</label>
-                  <input
-                    type="number"
-                    name="fuel_charge"
-                    step="0.01"
-                    value={editData.fuel_charge}
-                    onChange={handleEditChange}
-                    className="w-full border p-3 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold mb-2">Transport Charge (₹)</label>
-                  <input
-                    type="number"
-                    name="transport_charge"
-                    step="0.01"
-                    value={editData.transport_charge}
-                    onChange={handleEditChange}
-                    className="w-full border p-3 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-              </div>
-
-              {/* Notes */}
-              <div>
-                <label className="block text-sm font-semibold mb-2">Notes</label>
-                <textarea
-                  name="notes"
-                  value={editData.notes}
-                  onChange={handleEditChange}
-                  rows="3"
-                  className="w-full border p-3 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              {/* Payment Status */}
-              <div>
-                <label className="block text-sm font-semibold mb-2">Payment Status</label>
-                <select
-                  name="payment_status"
-                  value={editData.payment_status}
-                  onChange={handleEditChange}
-                  className="w-full border p-3 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="Pending">Pending</option>
-                  <option value="Paid">Paid</option>
-                  <option value="Cancelled">Cancelled</option>
-                </select>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex gap-2 pt-4 border-t">
-                <button
-                  type="button"
-                  onClick={handleSave}
-                  disabled={isSaving}
-                  className="flex-1 bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 disabled:bg-gray-400 transition font-semibold"
-                >
-                  {isSaving ? '💾 Saving...' : '💾 Save Changes'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIsEditing(false)}
-                  className="flex-1 bg-gray-600 text-white py-3 rounded-lg hover:bg-gray-700 transition font-semibold"
-                >
-                  ❌ Cancel
-                </button>
-              </div>
-            </form>
-          </div>
-        ) : (
-          /* Preview Mode */
-          bill && business && (
-            <BillPreview 
-              bill={bill} 
-              customer={{
-                name: bill.customer_name,
-                phone: bill.phone,
-                address: bill.address,
-                email: bill.email
-              }}
-              business={business} 
-            />
-          )
-        )}
+        <div className="flex items-center gap-2">
+          {!isEditing && (
+            <>
+              <button
+                onClick={() => setIsEditing(true)}
+                className="inline-flex items-center gap-1.5 bg-amber-500 hover:bg-amber-600 text-white font-semibold text-xs px-4 py-2 rounded-xl transition shadow-sm"
+              >
+                <Pencil className="w-3.5 h-3.5" />
+                Edit Invoice
+              </button>
+              <button
+                onClick={() => navigate('/bills')}
+                className="inline-flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs px-4 py-2 rounded-xl transition"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                Back to Bills
+              </button>
+            </>
+          )}
+        </div>
       </div>
+
+      {/* Message Alert */}
+      {message && (
+        <div
+          className={`p-4 rounded-xl border text-sm no-print ${
+            message.includes('✅')
+              ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
+              : 'bg-rose-50 border-rose-200 text-rose-800'
+          }`}
+        >
+          {message}
+        </div>
+      )}
+
+      {/* Edit Mode vs Preview Mode */}
+      {isEditing ? (
+        <form onSubmit={handleSave} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6 no-print">
+          <h2 className="text-lg font-bold text-slate-900 border-b pb-3">Edit Invoice Details</h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                Client / M/s Name
+              </label>
+              <input
+                type="text"
+                name="customer_name"
+                value={editData.customer_name}
+                onChange={handleEditChange}
+                className="w-full border border-slate-200 p-2.5 rounded-xl text-sm bg-slate-50"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                Site Name / Location
+              </label>
+              <input
+                type="text"
+                name="site_location"
+                value={editData.site_location}
+                onChange={handleEditChange}
+                className="w-full border border-slate-200 p-2.5 rounded-xl text-sm bg-slate-50"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                Invoice Date
+              </label>
+              <input
+                type="date"
+                name="bill_date"
+                value={editData.bill_date}
+                onChange={handleEditChange}
+                className="w-full border border-slate-200 p-2.5 rounded-xl text-sm bg-slate-50"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                Hourly Rate (₹)
+              </label>
+              <input
+                type="number"
+                name="hourly_rate"
+                value={editData.hourly_rate}
+                onChange={handleEditChange}
+                className="w-full border border-slate-200 p-2.5 rounded-xl text-sm bg-slate-50"
+                min="0"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                Operator Bhatta Rate / Day (₹)
+              </label>
+              <input
+                type="number"
+                name="operator_bhatta_rate_per_day"
+                value={editData.operator_bhatta_rate_per_day}
+                onChange={handleEditChange}
+                className="w-full border border-slate-200 p-2.5 rounded-xl text-sm bg-slate-50"
+                min="0"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                Operator Bhatta Total Days
+              </label>
+              <input
+                type="number"
+                name="operator_bhatta_days"
+                value={editData.operator_bhatta_days}
+                onChange={handleEditChange}
+                className="w-full border border-slate-200 p-2.5 rounded-xl text-sm bg-slate-50"
+                min="0"
+              />
+            </div>
+          </div>
+
+          <div className="flex gap-3 pt-4 border-t">
+            <button
+              type="submit"
+              disabled={isSaving}
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 text-white font-semibold text-sm rounded-xl hover:bg-emerald-700 transition shadow-sm disabled:opacity-50"
+            >
+              <Save className="w-4 h-4" />
+              <span>{isSaving ? 'Saving...' : 'Save Changes'}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsEditing(false)}
+              className="px-4 py-2.5 bg-slate-100 text-slate-700 font-semibold text-sm rounded-xl hover:bg-slate-200 transition"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      ) : (
+        <BillPreview
+          bill={bill}
+          customer={{
+            name: bill.customer_name,
+            phone: bill.customer_phone || bill.phone,
+            address: bill.address,
+            email: bill.email,
+          }}
+          business={business}
+        />
+      )}
     </div>
   );
 }

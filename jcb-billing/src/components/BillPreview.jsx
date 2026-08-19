@@ -23,7 +23,7 @@ export default function BillPreview({ bill = {}, customer = {}, business }) {
 
   const handlePrint = () => window.print();
 
-  // Sensible default fallbacks as requested
+  // Sensible default fallbacks
   const companyName = bill.company_name || bizInfo.company_name || 'A.B.S. ASHRAF SHEIKH';
   const companyTagline = bill.company_tagline || bizInfo.company_tagline || 'Available JCB, TIPPER & EARTH MOVERS - I.B.M. Road, Gittikhadan, Katol Road, Nagpur';
   const companyPhone = bill.company_phone || bizInfo.phone || '9371775288, 9970434903';
@@ -38,7 +38,15 @@ export default function BillPreview({ bill = {}, customer = {}, business }) {
   const hoursWorked = parseFloat(bill.hours_worked || 0);
   const hourlyRate = parseFloat(bill.hourly_rate || 0);
   const jcbAmount = hoursWorked * hourlyRate;
-  const operatorCharge = parseFloat(bill.operator_charge || 0);
+
+  // Work Log array for 3-column compact grid display inside Particulars cell
+  const workLog = bill.work_log || [];
+
+  // Per-Day Operator Bhatta Calculations
+  const operatorBhattaDays = bill.operator_bhatta_days || (workLog && workLog.length > 0 ? workLog.length : 1);
+  const operatorBhattaRate = bill.operator_bhatta_rate_per_day !== undefined ? parseFloat(bill.operator_bhatta_rate_per_day) : 200;
+  const operatorCharge = bill.operator_charge !== undefined ? parseFloat(bill.operator_charge) : (operatorBhattaDays * operatorBhattaRate);
+
   const fuelCharge = parseFloat(bill.fuel_charge || 0);
   const transportCharge = parseFloat(bill.transport_charge || 0);
 
@@ -56,14 +64,12 @@ export default function BillPreview({ bill = {}, customer = {}, business }) {
     }).format(Number(val) || 0);
   };
 
-  // Work Log array for 3-column compact grid display inside Particulars cell
-  const workLog = bill.work_log || [];
-
   return (
     <div className="max-w-4xl mx-auto space-y-4">
-      {/* Top Action Bar (HIDDEN IN PRINT) */}
+      {/* Top Action Bar (STRICTLY HIDDEN IN PRINT PREVIEW TO PREVENT HEADER LEAKS) */}
       <div className="flex items-center justify-between no-print bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
         <button
+          type="button"
           onClick={() => window.history.back()}
           className="inline-flex items-center gap-2 bg-slate-100 text-slate-700 font-semibold text-xs px-4 py-2.5 rounded-xl hover:bg-slate-200 transition"
         >
@@ -72,6 +78,7 @@ export default function BillPreview({ bill = {}, customer = {}, business }) {
         </button>
 
         <button
+          type="button"
           onClick={handlePrint}
           className="inline-flex items-center gap-2 bg-blue-600 text-white font-bold text-xs px-5 py-2.5 rounded-xl hover:bg-blue-700 transition shadow-sm"
         >
@@ -172,15 +179,15 @@ export default function BillPreview({ bill = {}, customer = {}, business }) {
                 <td className="p-2 text-right align-top font-bold text-slate-900">{jcbAmount.toFixed(2)}</td>
               </tr>
 
-              {/* Row 2: Operator Bhatta / Charge */}
+              {/* Row 2: Per-Day Operator Bhatta */}
               {operatorCharge > 0 && (
                 <tr>
-                  <td className="p-2 text-center align-top border-r border-slate-300">2</td>
-                  <td className="p-2 align-top border-r border-slate-300 font-semibold text-slate-800">
-                    Operator Allowance / Bhatta Charge
+                  <td className="p-2 text-center align-top border-r border-slate-300 font-bold">2</td>
+                  <td className="p-2 align-top border-r border-slate-300 font-bold text-slate-900">
+                    Operator Allowance / Bhatta ({operatorBhattaDays} Days)
                   </td>
-                  <td className="p-2 text-center align-top border-r border-slate-300">1 Job</td>
-                  <td className="p-2 text-right align-top border-r border-slate-300">{operatorCharge.toFixed(2)}</td>
+                  <td className="p-2 text-center align-top border-r border-slate-300 font-bold">{operatorBhattaDays} Days</td>
+                  <td className="p-2 text-right align-top border-r border-slate-300">{operatorBhattaRate.toFixed(2)}</td>
                   <td className="p-2 text-right align-top font-bold text-slate-900">{operatorCharge.toFixed(2)}</td>
                 </tr>
               )}
@@ -188,11 +195,11 @@ export default function BillPreview({ bill = {}, customer = {}, business }) {
               {/* Row 3: Fuel Surcharge */}
               {fuelCharge > 0 && (
                 <tr>
-                  <td className="p-2 text-center align-top border-r border-slate-300">3</td>
-                  <td className="p-2 align-top border-r border-slate-300 font-semibold text-slate-800">
+                  <td className="p-2 text-center align-top border-r border-slate-300 font-bold">3</td>
+                  <td className="p-2 align-top border-r border-slate-300 font-bold text-slate-900">
                     Fuel Surcharge
                   </td>
-                  <td className="p-2 text-center align-top border-r border-slate-300">1 Job</td>
+                  <td className="p-2 text-center align-top border-r border-slate-300 font-bold">1 Job</td>
                   <td className="p-2 text-right align-top border-r border-slate-300">{fuelCharge.toFixed(2)}</td>
                   <td className="p-2 text-right align-top font-bold text-slate-900">{fuelCharge.toFixed(2)}</td>
                 </tr>
@@ -201,11 +208,11 @@ export default function BillPreview({ bill = {}, customer = {}, business }) {
               {/* Row 4: Transport Charge */}
               {transportCharge > 0 && (
                 <tr>
-                  <td className="p-2 text-center align-top border-r border-slate-300">4</td>
-                  <td className="p-2 align-top border-r border-slate-300 font-semibold text-slate-800">
+                  <td className="p-2 text-center align-top border-r border-slate-300 font-bold">4</td>
+                  <td className="p-2 align-top border-r border-slate-300 font-bold text-slate-900">
                     Machine Transport / Towing Charge
                   </td>
-                  <td className="p-2 text-center align-top border-r border-slate-300">1 Trip</td>
+                  <td className="p-2 text-center align-top border-r border-slate-300 font-bold">1 Trip</td>
                   <td className="p-2 text-right align-top border-r border-slate-300">{transportCharge.toFixed(2)}</td>
                   <td className="p-2 text-right align-top font-bold text-slate-900">{transportCharge.toFixed(2)}</td>
                 </tr>
@@ -253,22 +260,23 @@ export default function BillPreview({ bill = {}, customer = {}, business }) {
           </div>
         </div>
 
-        {/* Footer Signatures - Exactly 1 A4 Page Fit */}
+        {/* Footer Signatures - Exactly Aligned Authorized Signatory Block */}
         <div className="pt-8 border-t border-slate-300 flex justify-between items-end text-[10px]">
           <div className="text-center w-48">
             <div className="border-b border-slate-900 pb-1 mb-1"></div>
             <p className="font-bold text-slate-900">Customer Signature</p>
           </div>
 
-          <div className="text-center w-60">
-            <p className="text-[9px] font-bold text-slate-700 mb-6">For {companyName}</p>
+          {/* Authorized Signatory Block with For [Company Name] Directly Below */}
+          <div className="text-right w-60">
             <div className="border-b border-slate-900 pb-1 mb-1"></div>
-            <p className="font-bold text-slate-900">Authorized Signatory</p>
+            <p className="font-bold text-xs text-slate-900">Authorized Signatory</p>
+            <p className="text-[10px] font-medium text-slate-600 mt-0.5">For {companyName}</p>
           </div>
         </div>
       </div>
 
-      {/* SINGLE PAGE A4 @media print STYLES */}
+      {/* SINGLE PAGE A4 @media print STYLES - PREVENTS HEADER LEAKS */}
       <style>{`
         @media print {
           @page {
@@ -285,7 +293,7 @@ export default function BillPreview({ bill = {}, customer = {}, business }) {
             print-color-adjust: exact !important;
           }
 
-          .no-print, nav, aside, header, button {
+          .no-print, nav, aside, header, button, .header-bar, .top-nav, h1.no-print {
             display: none !important;
           }
 

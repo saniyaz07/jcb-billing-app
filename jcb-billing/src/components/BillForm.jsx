@@ -28,6 +28,9 @@ export default function BillForm({
 
   const defaults = getSavedBusinessDefaults();
 
+  const initialDays = initialData?.operator_bhatta_days || (workEntries.length > 0 ? workEntries.length : 1);
+  const initialRate = initialData?.operator_bhatta_rate_per_day !== undefined ? initialData.operator_bhatta_rate_per_day : 200;
+
   const [formData, setFormData] = useState({
     bill_number: initialData?.bill_number || `INV-${Math.floor(1000 + Math.random() * 9000)}`,
     bill_date: initialData?.bill_date || new Date().toISOString().split('T')[0],
@@ -42,27 +45,47 @@ export default function BillForm({
     jcb_type: initialData?.jcb_type || 'JCB 3DX Super',
     hours_worked: totalHours || initialData?.hours_worked || 8,
     hourly_rate: initialData?.hourly_rate || 500,
-    operator_charge: initialData?.operator_charge || 0,
+    operator_bhatta_rate_per_day: initialRate,
+    operator_bhatta_days: initialDays,
+    operator_charge: initialData?.operator_charge !== undefined ? initialData.operator_charge : (initialDays * initialRate),
     fuel_charge: initialData?.fuel_charge || 0,
     transport_charge: initialData?.transport_charge || 0,
     include_gst: initialData?.include_gst !== undefined ? initialData.include_gst : false,
     notes: initialData?.notes || '',
   });
 
-  // Sync total hours when prop changes
+  // Sync total hours & operator bhatta days when workEntries prop changes
   useEffect(() => {
-    setFormData((prev) => ({
-      ...prev,
-      hours_worked: totalHours || prev.hours_worked,
-    }));
-  }, [totalHours]);
+    const daysCount = workEntries.length > 0 ? workEntries.length : 1;
+    setFormData((prev) => {
+      const updatedDays = prev.operator_bhatta_days || daysCount;
+      const rate = parseFloat(prev.operator_bhatta_rate_per_day) || 200;
+      return {
+        ...prev,
+        hours_worked: totalHours || prev.hours_worked,
+        operator_bhatta_days: daysCount,
+        operator_charge: daysCount * rate,
+      };
+    });
+  }, [totalHours, workEntries.length]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value,
-    }));
+    setFormData((prev) => {
+      const updated = {
+        ...prev,
+        [name]: type === 'checkbox' ? checked : value,
+      };
+
+      // Recalculate Operator Bhatta Total if Rate or Days are modified
+      if (name === 'operator_bhatta_rate_per_day' || name === 'operator_bhatta_days') {
+        const rate = parseFloat(name === 'operator_bhatta_rate_per_day' ? value : updated.operator_bhatta_rate_per_day) || 0;
+        const days = parseFloat(name === 'operator_bhatta_days' ? value : updated.operator_bhatta_days) || 0;
+        updated.operator_charge = Math.max(0, rate * days);
+      }
+
+      return updated;
+    });
   };
 
   const handleCustomerSelect = (e) => {
@@ -261,11 +284,11 @@ export default function BillForm({
         </div>
       </div>
 
-      {/* JCB Service Details */}
+      {/* JCB Service Details & Per-Day Operator Bhatta */}
       <div className="space-y-4 border-b border-slate-100 pb-6">
         <div className="flex items-center gap-2 text-slate-900 font-bold text-lg">
           <FileText className="w-5 h-5 text-amber-600" />
-          <span>JCB Service & Charges</span>
+          <span>JCB Service & Operator Bhatta</span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -312,18 +335,47 @@ export default function BillForm({
             />
           </div>
 
+          {/* PER-DAY BASED OPERATOR BHATTA FIELDS */}
           <div>
             <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-              Operator Bhatta / Charge (₹)
+              Operator Bhatta Rate / Day (₹)
+            </label>
+            <input
+              type="number"
+              name="operator_bhatta_rate_per_day"
+              value={formData.operator_bhatta_rate_per_day}
+              onChange={handleChange}
+              placeholder="200"
+              className="w-full border border-slate-200 p-2.5 rounded-xl text-sm focus:border-blue-500 bg-slate-50"
+              min="0"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+              Operator Bhatta Total Days
+            </label>
+            <input
+              type="number"
+              name="operator_bhatta_days"
+              value={formData.operator_bhatta_days}
+              onChange={handleChange}
+              placeholder="1"
+              className="w-full border border-slate-200 p-2.5 rounded-xl text-sm focus:border-blue-500 bg-slate-50"
+              min="0"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+              Total Operator Bhatta (₹)
             </label>
             <input
               type="number"
               name="operator_charge"
               value={formData.operator_charge}
-              onChange={handleChange}
-              placeholder="0"
-              className="w-full border border-slate-200 p-2.5 rounded-xl text-sm focus:border-blue-500 bg-slate-50"
-              min="0"
+              readOnly
+              className="w-full border border-slate-200 p-2.5 rounded-xl text-sm bg-slate-100 font-bold text-slate-900 cursor-not-allowed"
             />
           </div>
 
@@ -385,7 +437,7 @@ export default function BillForm({
           </div>
           {parseFloat(formData.operator_charge) > 0 && (
             <div className="flex justify-between">
-              <span>Operator Bhatta Charge:</span>
+              <span>Operator Bhatta ({formData.operator_bhatta_days} Days × ₹{formData.operator_bhatta_rate_per_day}/day):</span>
               <span className="font-semibold text-slate-800">₹{parseFloat(formData.operator_charge).toFixed(2)}</span>
             </div>
           )}
