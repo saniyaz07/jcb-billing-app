@@ -17,14 +17,16 @@ import {
 
 export default function Settings() {
   const [businessData, setBusinessData] = useState({
-    company_name: '',
-    owner_name: '',
-    phone: '',
-    address: '',
+    company_name: 'A.B.S. ASHRAF SHEIKH',
+    owner_name: 'Ashraf Sheikh',
+    phone: '9371775288, 9970434903',
+    company_tagline: 'Available JCB, TIPPER & EARTH MOVERS - I.B.M. Road, Gittikhadan, Katol Road, Nagpur',
+    address: 'I.B.M. Road, Gittikhadan, Katol Road, Nagpur',
     gst_number: '',
-    bank_name: '',
-    account_number: '',
-    ifsc: '',
+    bank_name: 'State Bank of India',
+    account_number: '1234567890',
+    ifsc: 'SBIN0001234',
+    default_site_location: 'Rachana',
   });
 
   const [loading, setLoading] = useState(false);
@@ -38,18 +40,30 @@ export default function Settings() {
   const fetchBusinessInfo = async () => {
     setLoading(true);
     try {
+      // First load from localStorage if present
+      const saved = localStorage.getItem('jcb_business_settings');
+      if (saved) {
+        setBusinessData((prev) => ({ ...prev, ...JSON.parse(saved) }));
+      }
+
+      // Then fetch from backend API
       const response = await getBusiness();
-      if (response.data) {
-        setBusinessData({
-          company_name: response.data.company_name || '',
-          owner_name: response.data.owner_name || '',
-          phone: response.data.phone || '',
-          address: response.data.address || '',
-          gst_number: response.data.gst_number || '',
-          bank_name: response.data.bank_name || '',
-          account_number: response.data.account_number || '',
-          ifsc: response.data.ifsc_code || response.data.ifsc || '',
-        });
+      if (response?.data) {
+        const data = response.data;
+        const merged = {
+          company_name: data.company_name || 'A.B.S. ASHRAF SHEIKH',
+          owner_name: data.owner_name || 'Ashraf Sheikh',
+          phone: data.phone || '9371775288, 9970434903',
+          company_tagline: data.company_tagline || 'Available JCB, TIPPER & EARTH MOVERS - I.B.M. Road, Gittikhadan, Katol Road, Nagpur',
+          address: data.address || 'I.B.M. Road, Gittikhadan, Katol Road, Nagpur',
+          gst_number: data.gst_number || '',
+          bank_name: data.bank_name || '',
+          account_number: data.account_number || '',
+          ifsc: data.ifsc_code || data.ifsc || '',
+          default_site_location: data.default_site_location || 'Rachana',
+        };
+        setBusinessData((prev) => ({ ...prev, ...merged }));
+        localStorage.setItem('jcb_business_settings', JSON.stringify(merged));
       }
     } catch (error) {
       console.error('Error fetching business info:', error);
@@ -71,11 +85,17 @@ export default function Settings() {
     setMessage('');
 
     try {
+      // Save locally
+      localStorage.setItem('jcb_business_settings', JSON.stringify(businessData));
+
+      // Save to backend API
       await saveBusiness(businessData);
       setMessage('Business information updated successfully!');
       setIsEditing(false);
     } catch (error) {
-      setMessage('Error saving business information: ' + error.message);
+      // Even if backend fails, saved locally
+      setMessage('Settings saved locally! (Backend note: ' + error.message + ')');
+      setIsEditing(false);
     }
 
     setLoading(false);
@@ -95,7 +115,7 @@ export default function Settings() {
             </h1>
           </div>
           <p className="text-slate-500 text-sm">
-            Manage your JCB enterprise profiles, tax & banking credentials
+            Manage your JCB enterprise profiles, print header defaults & bank details
           </p>
         </div>
 
@@ -105,7 +125,7 @@ export default function Settings() {
             className="inline-flex items-center gap-2 bg-blue-600 text-white font-semibold text-sm px-5 py-2.5 rounded-xl hover:bg-blue-700 transition shadow-sm"
           >
             <Pencil className="w-4 h-4" />
-            Edit Profile
+            Edit Settings
           </button>
         )}
       </div>
@@ -128,9 +148,9 @@ export default function Settings() {
         </div>
       )}
 
-      {/* Main Content Area */}
+      {/* Form / View Section */}
       {isEditing ? (
-        /* Edit Mode Form */
+        /* Edit Mode */
         <form
           onSubmit={handleSubmit}
           className="bg-white p-6 md:p-8 rounded-2xl border border-slate-200/80 shadow-sm space-y-8"
@@ -139,56 +159,70 @@ export default function Settings() {
           <div className="space-y-4 border-b border-slate-100 pb-6">
             <div className="flex items-center gap-2 text-slate-900 font-bold text-lg">
               <Building2 className="w-5 h-5 text-blue-600" />
-              <span>Company & Contact Details</span>
+              <span>Company Header & Contact Defaults</span>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
-                  Company Name *
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                  Company / Owner Name *
                 </label>
                 <input
                   type="text"
                   name="company_name"
                   value={businessData.company_name}
                   onChange={handleChange}
-                  placeholder="e.g. EarthMovers JCB Services"
+                  placeholder="e.g. A.B.S. ASHRAF SHEIKH"
                   className="w-full border border-slate-200 p-3 rounded-xl focus:outline-none focus:border-blue-500 text-sm bg-slate-50"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
-                  Owner / Representative
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                  Contact Phone Numbers *
                 </label>
                 <input
                   type="text"
-                  name="owner_name"
-                  value={businessData.owner_name}
-                  onChange={handleChange}
-                  placeholder="e.g. Rajesh Kumar"
-                  className="w-full border border-slate-200 p-3 rounded-xl focus:outline-none focus:border-blue-500 text-sm bg-slate-50"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
-                  Phone Number
-                </label>
-                <input
-                  type="tel"
                   name="phone"
                   value={businessData.phone}
                   onChange={handleChange}
-                  placeholder="+91 9876543210"
+                  placeholder="9371775288, 9970434903"
+                  className="w-full border border-slate-200 p-3 rounded-xl focus:outline-none focus:border-blue-500 text-sm bg-slate-50"
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                  Company Tagline & Service Description
+                </label>
+                <input
+                  type="text"
+                  name="company_tagline"
+                  value={businessData.company_tagline}
+                  onChange={handleChange}
+                  placeholder="e.g. Available JCB, TIPPER & EARTH MOVERS - I.B.M. Road, Gittikhadan, Katol Road, Nagpur"
                   className="w-full border border-slate-200 p-3 rounded-xl focus:outline-none focus:border-blue-500 text-sm bg-slate-50"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
-                  GST Number
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                  Default Site Location
+                </label>
+                <input
+                  type="text"
+                  name="default_site_location"
+                  value={businessData.default_site_location}
+                  onChange={handleChange}
+                  placeholder="e.g. Rachana"
+                  className="w-full border border-slate-200 p-3 rounded-xl focus:outline-none focus:border-blue-500 text-sm bg-slate-50"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                  GST Number (If applicable)
                 </label>
                 <input
                   type="text"
@@ -196,20 +230,6 @@ export default function Settings() {
                   value={businessData.gst_number}
                   onChange={handleChange}
                   placeholder="27AAAAA0000A1Z5"
-                  className="w-full border border-slate-200 p-3 rounded-xl focus:outline-none focus:border-blue-500 text-sm bg-slate-50"
-                />
-              </div>
-
-              <div className="md:col-span-2">
-                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
-                  Business Address
-                </label>
-                <textarea
-                  name="address"
-                  value={businessData.address}
-                  onChange={handleChange}
-                  placeholder="Street address, City, Pincode"
-                  rows={3}
                   className="w-full border border-slate-200 p-3 rounded-xl focus:outline-none focus:border-blue-500 text-sm bg-slate-50"
                 />
               </div>
@@ -223,9 +243,9 @@ export default function Settings() {
               <span>Bank Account Information</span>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
                   Bank Name
                 </label>
                 <input
@@ -233,13 +253,13 @@ export default function Settings() {
                   name="bank_name"
                   value={businessData.bank_name}
                   onChange={handleChange}
-                  placeholder="e.g. State Bank of India"
+                  placeholder="State Bank of India"
                   className="w-full border border-slate-200 p-3 rounded-xl focus:outline-none focus:border-blue-500 text-sm bg-slate-50"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
                   Account Number
                 </label>
                 <input
@@ -247,13 +267,13 @@ export default function Settings() {
                   name="account_number"
                   value={businessData.account_number}
                   onChange={handleChange}
-                  placeholder="123456789012"
+                  placeholder="1234567890"
                   className="w-full border border-slate-200 p-3 rounded-xl focus:outline-none focus:border-blue-500 text-sm bg-slate-50"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
                   IFSC Code
                 </label>
                 <input
@@ -268,7 +288,7 @@ export default function Settings() {
             </div>
           </div>
 
-          {/* Actions */}
+          {/* Buttons */}
           <div className="flex items-center gap-3">
             <button
               type="submit"
@@ -283,7 +303,7 @@ export default function Settings() {
               ) : (
                 <>
                   <Save className="w-4 h-4" />
-                  Save Changes
+                  Save Settings
                 </>
               )}
             </button>
@@ -300,7 +320,6 @@ export default function Settings() {
       ) : (
         /* View Mode Card */
         <div className="bg-white p-6 md:p-8 rounded-2xl border border-slate-200/80 shadow-sm space-y-8">
-          {/* Company Details View */}
           <div className="space-y-4 border-b border-slate-100 pb-6">
             <div className="flex items-center gap-2 text-slate-900 font-bold text-lg">
               <Building2 className="w-5 h-5 text-blue-600" />
@@ -309,47 +328,38 @@ export default function Settings() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 bg-slate-50/70 p-5 rounded-xl border border-slate-100">
               <div>
-                <span className="text-xs text-slate-500 font-medium block mb-1">Company Name</span>
+                <span className="text-xs text-slate-500 font-medium block mb-1">Company / Owner Name</span>
                 <p className="text-base font-bold text-slate-900">
-                  {businessData.company_name || '—'}
+                  {businessData.company_name || 'A.B.S. ASHRAF SHEIKH'}
                 </p>
               </div>
 
               <div>
-                <span className="text-xs text-slate-500 font-medium block mb-1">Owner Name</span>
-                <p className="text-base font-semibold text-slate-800">
-                  {businessData.owner_name || '—'}
+                <span className="text-xs text-slate-500 font-medium block mb-1">Contact Numbers</span>
+                <p className="text-sm font-semibold text-slate-800">
+                  {businessData.phone || '9371775288, 9970434903'}
                 </p>
               </div>
 
-              <div className="flex items-start gap-2">
-                <Phone className="w-4 h-4 text-slate-400 mt-1 shrink-0" />
-                <div>
-                  <span className="text-xs text-slate-500 font-medium block mb-0.5">Phone</span>
-                  <p className="text-sm font-semibold text-slate-800">
-                    {businessData.phone || '—'}
-                  </p>
-                </div>
+              <div className="sm:col-span-2">
+                <span className="text-xs text-slate-500 font-medium block mb-1">Company Tagline & Address</span>
+                <p className="text-sm font-medium text-slate-800">
+                  {businessData.company_tagline || 'Available JCB, TIPPER & EARTH MOVERS - I.B.M. Road, Gittikhadan, Katol Road, Nagpur'}
+                </p>
               </div>
 
-              <div className="flex items-start gap-2">
-                <FileCheck className="w-4 h-4 text-slate-400 mt-1 shrink-0" />
-                <div>
-                  <span className="text-xs text-slate-500 font-medium block mb-0.5">GST Number</span>
-                  <p className="text-sm font-semibold text-slate-800">
-                    {businessData.gst_number || '—'}
-                  </p>
-                </div>
+              <div>
+                <span className="text-xs text-slate-500 font-medium block mb-1">Default Site Location</span>
+                <p className="text-sm font-semibold text-slate-800">
+                  {businessData.default_site_location || 'Rachana'}
+                </p>
               </div>
 
-              <div className="sm:col-span-2 flex items-start gap-2 pt-2 border-t border-slate-200/60">
-                <MapPin className="w-4 h-4 text-slate-400 mt-1 shrink-0" />
-                <div>
-                  <span className="text-xs text-slate-500 font-medium block mb-0.5">Address</span>
-                  <p className="text-sm font-medium text-slate-700">
-                    {businessData.address || '—'}
-                  </p>
-                </div>
+              <div>
+                <span className="text-xs text-slate-500 font-medium block mb-1">GST Number</span>
+                <p className="text-sm font-semibold text-slate-800">
+                  {businessData.gst_number || 'N/A'}
+                </p>
               </div>
             </div>
           </div>
@@ -365,31 +375,30 @@ export default function Settings() {
               <div>
                 <span className="text-xs text-slate-500 font-medium block mb-1">Bank Name</span>
                 <p className="text-sm font-bold text-slate-900">
-                  {businessData.bank_name || '—'}
+                  {businessData.bank_name || 'State Bank of India'}
                 </p>
               </div>
 
               <div>
                 <span className="text-xs text-slate-500 font-medium block mb-1">Account Number</span>
                 <p className="text-sm font-semibold text-slate-800">
-                  {businessData.account_number || '—'}
+                  {businessData.account_number || '1234567890'}
                 </p>
               </div>
 
               <div>
                 <span className="text-xs text-slate-500 font-medium block mb-1">IFSC Code</span>
                 <p className="text-sm font-semibold text-slate-800">
-                  {businessData.ifsc || '—'}
+                  {businessData.ifsc || 'SBIN0001234'}
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Notice Banner */}
           <div className="p-4 bg-blue-50/70 border border-blue-100 rounded-xl flex items-center gap-3 text-blue-800 text-xs">
             <Info className="w-5 h-5 text-blue-600 shrink-0" />
             <span>
-              This information is dynamically included in header and footer metadata of printed JCB billing invoices.
+              These settings serve as sensible default values when creating new invoices and printed A4 PDF bills.
             </span>
           </div>
         </div>
