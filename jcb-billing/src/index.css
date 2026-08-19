@@ -252,7 +252,9 @@ td {
 }  */
  /* */
 
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 /* ================= CUSTOM BASE STYLES ================= */
 @layer base {

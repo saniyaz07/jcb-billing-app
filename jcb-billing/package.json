@@ -9,6 +9,9 @@
     "lint": "eslint .",
     "preview": "vite preview"
   },
+  "engines": {
+    "node": ">=18.0.0 <24.0.0"
+  },
   "dependencies": {
     "axios": "^1.14.0",
     "lucide-react": "^0.475.0",
@@ -18,7 +21,6 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.20.0",
-    "@tailwindcss/postcss": "^4.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^4.3.4",
@@ -27,8 +29,8 @@
     "eslint-plugin-react-hooks": "^5.1.0",
     "eslint-plugin-react-refresh": "^0.4.19",
     "globals": "^15.15.0",
-    "postcss": "^8.5.1",
-    "tailwindcss": "^4.0.0",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.17",
     "vite": "^6.2.0"
   }
 }
