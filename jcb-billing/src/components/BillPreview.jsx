@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 // import { useEffect, useState } from 'react';
 // import { getBusiness } from '../services/api';
 
@@ -248,6 +249,8 @@
 //     </div>
 //   );
 // }
+=======
+>>>>>>> 6ab116f729ec3b6d9893557c9200c38e2f7c128e
 import { useEffect, useState } from 'react';
 import { getBusiness } from '../services/api';
 

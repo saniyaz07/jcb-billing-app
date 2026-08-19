@@ -1,214 +1,21 @@
-// import { useState, useEffect } from 'react';
-// import { getBills, getCustomers } from "../services/api";
-// export default function Dashboard() {
-//   const [stats, setStats] = useState({
-//     totalBills: 0,
-//     totalRevenue: 0,
-//     pendingAmount: 0,
-//     totalCustomers: 0,
-//   });
-//   const [recentBills, setRecentBills] = useState([]);
-//   const [loading, setLoading] = useState(true);
-
-//   useEffect(() => {
-//     fetchData();
-//   }, []);
-
-//   const fetchData = async () => {
-//     setLoading(true);
-//     try {
-//       const billsResponse = await getBills();
-//       const customersResponse = await getCustomers();
-
-//       const bills = billsResponse.data;
-//       const totalRevenue = bills.reduce((sum, bill) => sum + (bill.total_amount || 0), 0);
-//       const pendingAmount = bills
-//         .filter((bill) => bill.payment_status === 'Pending')
-//         .reduce((sum, bill) => sum + (bill.total_amount || 0), 0);
-
-//       setStats({
-//         totalBills: bills.length,
-//         totalRevenue: totalRevenue,
-//         pendingAmount: pendingAmount,
-//         totalCustomers: customersResponse.data.length,
-//       });
-
-//       setRecentBills(bills.slice(0, 5));
-//     } catch (error) {
-//       console.error('Error fetching dashboard data:', error);
-//     }
-//     setLoading(false);
-//   };
-
-//   return (
-//     <div className="max-w-7xl mx-auto p-6">
-//       {/* Header */}
-//       <div className="mb-8">
-//         <h1 className="text-4xl font-bold text-gray-800 mb-2">📊 Dashboard</h1>
-//         <p className="text-gray-600">Welcome to your JCB Billing Management System</p>
-//       </div>
-
-//       {/* Stats Cards */}
-//       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-//         {/* Total Bills */}
-//         <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-6 rounded-lg shadow-lg">
-//           <div className="flex justify-between items-start">
-//             <div>
-//               <p className="text-blue-100 text-sm font-semibold mb-2">Total Bills</p>
-//               <p className="text-4xl font-bold">{stats.totalBills}</p>
-//             </div>
-//             <span className="text-4xl">📄</span>
-//           </div>
-//           <p className="text-blue-100 text-xs mt-4">All-time invoices created</p>
-//         </div>
-
-//         {/* Total Revenue */}
-//         <div className="bg-gradient-to-br from-green-500 to-green-600 text-white p-6 rounded-lg shadow-lg">
-//           <div className="flex justify-between items-start">
-//             <div>
-//               <p className="text-green-100 text-sm font-semibold mb-2">Total Revenue</p>
-//               <p className="text-3xl font-bold">
-//               ₹{stats?.totalRevenue ? stats.totalRevenue.toFixed(0) : 0}</p>
-//             </div>
-//             <span className="text-4xl">💰</span>
-//           </div>
-//           <p className="text-green-100 text-xs mt-4">Total earned from bills</p>
-//         </div>
-
-//         {/* Pending Amount */}
-//         <div className="bg-gradient-to-br from-yellow-500 to-yellow-600 text-white p-6 rounded-lg shadow-lg">
-//           <div className="flex justify-between items-start">
-//             <div>
-//               <p className="text-yellow-100 text-sm font-semibold mb-2">Pending Amount</p>
-//               <p className="text-3xl font-bold">₹{stats.pendingAmount.toFixed(0)}</p>
-//             </div>
-//             <span className="text-4xl">⏳</span>
-//           </div>
-//           <p className="text-yellow-100 text-xs mt-4">Awaiting payment</p>
-//         </div>
-
-//         {/* Total Customers */}
-//         <div className="bg-gradient-to-br from-purple-500 to-purple-600 text-white p-6 rounded-lg shadow-lg">
-//           <div className="flex justify-between items-start">
-//             <div>
-//               <p className="text-purple-100 text-sm font-semibold mb-2">Total Customers</p>
-//               <p className="text-4xl font-bold">{stats.totalCustomers}</p>
-//             </div>
-//             <span className="text-4xl">👥</span>
-//           </div>
-//           <p className="text-purple-100 text-xs mt-4">Registered clients</p>
-//         </div>
-//       </div>
-
-//       {/* Recent Bills Section */}
-//       <div className="bg-white rounded-lg shadow-lg p-8">
-//         <h2 className="text-2xl font-bold text-gray-800 mb-6">📋 Recent Bills</h2>
-
-//         {loading ? (
-//           <div className="text-center py-12">
-//             <p className="text-gray-600">⏳ Loading...</p>
-//           </div>
-//         ) : recentBills.length === 0 ? (
-//           <div className="text-center py-12">
-//             <p className="text-gray-600 mb-4">No bills created yet</p>
-//             <a
-//               href="/create-bill"
-//               className="inline-block bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
-//             >
-//               Create First Bill
-//             </a>
-//           </div>
-//         ) : (
-//           <div className="overflow-x-auto">
-//             <table className="w-full text-sm">
-//               <thead>
-//                 <tr className="bg-gray-100 border-b-2 border-gray-300">
-//                   <th className="text-left p-4 font-semibold text-gray-800">Invoice #</th>
-//                   <th className="text-left p-4 font-semibold text-gray-800">Customer</th>
-//                   <th className="text-left p-4 font-semibold text-gray-800">Date</th>
-//                   <th className="text-right p-4 font-semibold text-gray-800">Amount</th>
-//                   <th className="text-center p-4 font-semibold text-gray-800">Status</th>
-//                   <th className="text-center p-4 font-semibold text-gray-800">Action</th>
-//                 </tr>
-//               </thead>
-//               <tbody>
-//                 {recentBills.map((bill) => (
-//                   <tr key={bill.id} className="border-b border-gray-200 hover:bg-gray-50 transition">
-//                     <td className="p-4 font-semibold text-blue-600">{bill.bill_number}</td>
-//                     <td className="p-4 text-gray-800">{bill.customer_name || 'N/A'}</td>
-//                     <td className="p-4 text-gray-600">{bill.bill_date}</td>
-//                     <td className="p-4 text-right font-bold text-gray-800">
-//                       ₹{parseFloat(bill.total_amount).toFixed(2)}
-//                     </td>
-//                     <td className="p-4 text-center">
-//                       <span
-//                         className={`px-3 py-1 rounded-full text-xs font-semibold ${
-//                           bill.payment_status === 'Paid'
-//                             ? 'bg-green-100 text-green-700'
-//                             : 'bg-yellow-100 text-yellow-700'
-//                         }`}
-//                       >
-//                         {bill.payment_status || 'Pending'}
-//                       </span>
-//                     </td>
-//                     <td className="p-4 text-center">
-//                       <a
-//                         href={`/bills/${bill.id}`}
-//                         className="text-blue-600 hover:text-blue-800 font-semibold"
-//                       >
-//                         View
-//                       </a>
-//                     </td>
-//                   </tr>
-//                 ))}
-//               </tbody>
-//             </table>
-//           </div>
-//         )}
-
-//         {recentBills.length > 0 && (
-//           <div className="mt-6 text-center">
-//             <a
-//               href="/bills"
-//               className="inline-block bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
-//             >
-//               View All Bills →
-//             </a>
-//           </div>
-//         )}
-//       </div>
-
-//       {/* Quick Actions */}
-//       <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-//         <a
-//           href="/create-bill"
-//           className="bg-blue-600 text-white p-6 rounded-lg hover:bg-blue-700 transition text-center"
-//         >
-//           <p className="text-3xl mb-2">📝</p>
-//           <p className="font-semibold">Create New Bill</p>
-//         </a>
-
-//         <a
-//           href="/customers"
-//           className="bg-green-600 text-white p-6 rounded-lg hover:bg-green-700 transition text-center"
-//         >
-//           <p className="text-3xl mb-2">👥</p>
-//           <p className="font-semibold">Manage Customers</p>
-//         </a>
-
-//         <a
-//           href="/settings"
-//           className="bg-purple-600 text-white p-6 rounded-lg hover:bg-purple-700 transition text-center"
-//         >
-//           <p className="text-3xl mb-2">⚙️</p>
-//           <p className="font-semibold">Business Settings</p>
-//         </a>
-//       </div>
-//     </div>
-//   );
-// }
 import { useState, useEffect } from 'react';
-import { getBills, getCustomers } from "../services/api";
+import { getBills, getCustomers } from '../services/api';
+import { Link } from 'react-router-dom';
+import {
+  FileText,
+  TrendingUp,
+  Clock,
+  Users,
+  PlusCircle,
+  Eye,
+  Settings,
+  AlertTriangle,
+  RefreshCw,
+  Inbox,
+  ArrowRight,
+  BarChart3,
+  CheckCircle2
+} from 'lucide-react';
 
 export default function Dashboard() {
   const [stats, setStats] = useState({
@@ -219,6 +26,7 @@ export default function Dashboard() {
   });
   const [recentBills, setRecentBills] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     fetchData();
@@ -226,19 +34,37 @@ export default function Dashboard() {
 
   const fetchData = async () => {
     setLoading(true);
+    setError(null);
+
     try {
-      const billsResponse = await getBills();
-      const customersResponse = await getCustomers();
+      // Use Promise.allSettled to handle partial failures or slow endpoints gracefully
+      const [billsRes, customersRes] = await Promise.allSettled([
+        getBills(),
+        getCustomers(),
+      ]);
 
-      console.log("Bills:", billsResponse.data);
-      console.log("Customers:", customersResponse.data);
+      let bills = [];
+      let customers = [];
 
-      const bills = billsResponse.data || [];
-      const customers = customersResponse.data || [];
+      if (billsRes.status === 'fulfilled' && billsRes.value?.data) {
+        bills = Array.isArray(billsRes.value.data) ? billsRes.value.data : [];
+      }
 
-      const totalRevenue = bills.reduce((sum, bill) => sum + (parseFloat(bill.total_amount) || 0), 0);
+      if (customersRes.status === 'fulfilled' && customersRes.value?.data) {
+        customers = Array.isArray(customersRes.value.data) ? customersRes.value.data : [];
+      }
+
+      if (billsRes.status === 'rejected' && customersRes.status === 'rejected') {
+        throw new Error('Unable to fetch dashboard metrics from backend server.');
+      }
+
+      const totalRevenue = bills.reduce(
+        (sum, bill) => sum + (parseFloat(bill.total_amount) || 0),
+        0
+      );
+
       const pendingAmount = bills
-        .filter((bill) => bill.payment_status === 'Pending')
+        .filter((bill) => (bill.payment_status || '').toLowerCase() === 'pending')
         .reduce((sum, bill) => sum + (parseFloat(bill.total_amount) || 0), 0);
 
       setStats({
@@ -248,182 +74,400 @@ export default function Dashboard() {
         totalCustomers: customers.length,
       });
 
+      // Sort by date or id descending if available, and take top 5
       setRecentBills(bills.slice(0, 5));
-    } catch (error) {
-      console.error('Error fetching dashboard data:', error);
+    } catch (err) {
+      console.error('Error fetching dashboard data:', err);
+      setError(err.message || 'Failed to load dashboard data. Please try again.');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
+  };
+
+  // Indian Rupee standard currency formatter (WCAG accessible contrast & clean display)
+  const formatCurrency = (amount) => {
+    const num = Number(amount) || 0;
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      maximumFractionDigits: 0,
+    }).format(num);
   };
 
   return (
-    <div className="max-w-7xl mx-auto p-6">
+    <div className="max-w-7xl mx-auto p-6 md:p-8 space-y-8">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold text-gray-800 mb-2">📊 Dashboard</h1>
-        <p className="text-gray-600">Welcome to your JCB Billing Management System</p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight mb-1">
+            Dashboard Overview
+          </h1>
+          <p className="text-slate-500 text-sm">
+            Welcome to your JCB Billing Management System
+          </p>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <button
+            onClick={fetchData}
+            disabled={loading}
+            className="inline-flex items-center gap-2 px-3.5 py-2 bg-white border border-slate-200 hover:border-slate-300 text-slate-700 font-medium text-xs rounded-xl shadow-sm transition-all hover:bg-slate-50 disabled:opacity-50"
+            title="Refresh dashboard data"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 text-slate-500 ${loading ? 'animate-spin' : ''}`} />
+            Refresh
+          </button>
+          <Link
+            to="/create-bill"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm rounded-xl shadow-sm hover:shadow transition-all"
+          >
+            <PlusCircle className="w-4 h-4" />
+            Create Bill
+          </Link>
+        </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {/* Total Bills */}
-        <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-6 rounded-lg shadow-lg">
-          <div className="flex justify-between items-start">
-            <div>
-              <p className="text-blue-100 text-sm font-semibold mb-2">Total Bills</p>
-              <p className="text-4xl font-bold">{stats.totalBills}</p>
-            </div>
-            <span className="text-4xl">📄</span>
+      {/* Error Alert Banner */}
+      {error && (
+        <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl flex items-center justify-between text-rose-800 text-sm">
+          <div className="flex items-center gap-3">
+            <AlertTriangle className="w-5 h-5 text-rose-600 shrink-0" />
+            <span className="font-medium">{error}</span>
           </div>
-          <p className="text-blue-100 text-xs mt-4">All-time invoices created</p>
+          <button
+            onClick={fetchData}
+            className="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white font-semibold rounded-lg text-xs transition"
+          >
+            Retry Connection
+          </button>
+        </div>
+      )}
+
+      {/* Stats Cards Grid - Soft Pastels & WCAG Accessible Contrast */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        {/* Total Bills */}
+        <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all">
+          <div className="flex justify-between items-start mb-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">
+                Total Invoices
+              </p>
+              <h3 className="text-3xl font-extrabold text-slate-900">
+                {loading ? (
+                  <span className="inline-block w-12 h-7 bg-slate-100 rounded animate-pulse"></span>
+                ) : (
+                  stats.totalBills
+                )}
+              </h3>
+            </div>
+            <div className="p-3 bg-blue-50 border border-blue-100 rounded-xl text-blue-600">
+              <FileText className="w-6 h-6 stroke-[2]" />
+            </div>
+          </div>
+          <p className="text-xs text-slate-500 font-medium">All-time invoices created</p>
         </div>
 
         {/* Total Revenue */}
-        <div className="bg-gradient-to-br from-green-500 to-green-600 text-white p-6 rounded-lg shadow-lg">
-          <div className="flex justify-between items-start">
+        <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all">
+          <div className="flex justify-between items-start mb-4">
             <div>
-              <p className="text-green-100 text-sm font-semibold mb-2">Total Revenue</p>
-              <p className="text-3xl font-bold">
-                ₹{stats.totalRevenue ? stats.totalRevenue.toFixed(0) : 0}
+              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">
+                Total Revenue
               </p>
+              <h3 className="text-2xl font-extrabold text-slate-900">
+                {loading ? (
+                  <span className="inline-block w-24 h-7 bg-slate-100 rounded animate-pulse"></span>
+                ) : (
+                  formatCurrency(stats.totalRevenue)
+                )}
+              </h3>
             </div>
-            <span className="text-4xl">💰</span>
+            <div className="p-3 bg-emerald-50 border border-emerald-100 rounded-xl text-emerald-600">
+              <TrendingUp className="w-6 h-6 stroke-[2]" />
+            </div>
           </div>
-          <p className="text-green-100 text-xs mt-4">Total earned from bills</p>
+          <p className="text-xs text-slate-500 font-medium">Total earned from bills</p>
         </div>
 
         {/* Pending Amount */}
-        <div className="bg-gradient-to-br from-yellow-500 to-yellow-600 text-white p-6 rounded-lg shadow-lg">
-          <div className="flex justify-between items-start">
+        <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all">
+          <div className="flex justify-between items-start mb-4">
             <div>
-              <p className="text-yellow-100 text-sm font-semibold mb-2">Pending Amount</p>
-              <p className="text-3xl font-bold">
-                ₹{stats.pendingAmount ? stats.pendingAmount.toFixed(0) : 0}
+              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">
+                Pending Balance
               </p>
+              <h3 className="text-2xl font-extrabold text-amber-700">
+                {loading ? (
+                  <span className="inline-block w-24 h-7 bg-slate-100 rounded animate-pulse"></span>
+                ) : (
+                  formatCurrency(stats.pendingAmount)
+                )}
+              </h3>
             </div>
-            <span className="text-4xl">⏳</span>
+            <div className="p-3 bg-amber-50 border border-amber-100 rounded-xl text-amber-600">
+              <Clock className="w-6 h-6 stroke-[2]" />
+            </div>
           </div>
-          <p className="text-yellow-100 text-xs mt-4">Awaiting payment</p>
+          <p className="text-xs text-slate-500 font-medium">Awaiting customer payment</p>
         </div>
 
         {/* Total Customers */}
-        <div className="bg-gradient-to-br from-purple-500 to-purple-600 text-white p-6 rounded-lg shadow-lg">
-          <div className="flex justify-between items-start">
+        <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all">
+          <div className="flex justify-between items-start mb-4">
             <div>
-              <p className="text-purple-100 text-sm font-semibold mb-2">Total Customers</p>
-              <p className="text-4xl font-bold">{stats.totalCustomers}</p>
+              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">
+                Total Customers
+              </p>
+              <h3 className="text-3xl font-extrabold text-slate-900">
+                {loading ? (
+                  <span className="inline-block w-12 h-7 bg-slate-100 rounded animate-pulse"></span>
+                ) : (
+                  stats.totalCustomers
+                )}
+              </h3>
             </div>
-            <span className="text-4xl">👥</span>
+            <div className="p-3 bg-indigo-50 border border-indigo-100 rounded-xl text-indigo-600">
+              <Users className="w-6 h-6 stroke-[2]" />
+            </div>
           </div>
-          <p className="text-purple-100 text-xs mt-4">Registered clients</p>
+          <p className="text-xs text-slate-500 font-medium">Registered client records</p>
         </div>
       </div>
 
       {/* Recent Bills Section */}
-      <div className="bg-white rounded-lg shadow-lg p-8">
-        <h2 className="text-2xl font-bold text-gray-800 mb-6">📋 Recent Bills</h2>
+      <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm space-y-6">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 bg-slate-100 text-slate-700 rounded-lg">
+              <FileText className="w-5 h-5" />
+            </div>
+            <h2 className="text-lg font-bold text-slate-900">Recent Bills</h2>
+          </div>
+          {recentBills.length > 0 && !loading && (
+            <Link
+              to="/bills"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:text-blue-700 transition"
+            >
+              <span>View All Bills</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          )}
+        </div>
 
+        {/* Skeleton Loader State */}
         {loading ? (
-          <div className="text-center py-12">
-            <p className="text-gray-600">⏳ Loading...</p>
+          <div className="space-y-3">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div
+                key={i}
+                className="animate-pulse flex items-center justify-between p-4 border-b border-slate-100 rounded-lg bg-slate-50/50"
+              >
+                <div className="flex items-center gap-4 w-1/3">
+                  <div className="h-4 bg-slate-200 rounded w-16"></div>
+                  <div className="h-4 bg-slate-200 rounded w-32"></div>
+                </div>
+                <div className="h-4 bg-slate-200 rounded w-20"></div>
+                <div className="h-4 bg-slate-200 rounded w-24"></div>
+                <div className="h-6 bg-slate-200 rounded-full w-16"></div>
+                <div className="h-4 bg-slate-200 rounded w-12"></div>
+              </div>
+            ))}
           </div>
         ) : recentBills.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-gray-600 mb-4">No bills created yet</p>
-            <a
-              href="/create-bill"
-              className="inline-block bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
+          /* Dedicated Empty State */
+          <div className="text-center py-12 px-4 max-w-md mx-auto space-y-4">
+            <div className="w-16 h-16 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mx-auto border border-slate-200">
+              <Inbox className="w-8 h-8 stroke-[1.5]" />
+            </div>
+            <div>
+              <h3 className="text-base font-bold text-slate-800">No recent invoices found</h3>
+              <p className="text-xs text-slate-500 mt-1">
+                You haven't generated any JCB billing invoices yet. Click below to create your first bill.
+              </p>
+            </div>
+            <Link
+              to="/create-bill"
+              className="inline-flex items-center gap-2 bg-blue-600 text-white font-semibold text-sm px-5 py-2.5 rounded-xl hover:bg-blue-700 transition shadow-sm"
             >
+              <PlusCircle className="w-4 h-4" />
               Create First Bill
-            </a>
+            </Link>
           </div>
         ) : (
+          /* Table View */
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full text-sm text-left">
               <thead>
-                <tr className="bg-gray-100 border-b-2 border-gray-300">
-                  <th className="text-left p-4 font-semibold text-gray-800">Invoice #</th>
-                  <th className="text-left p-4 font-semibold text-gray-800">Customer</th>
-                  <th className="text-left p-4 font-semibold text-gray-800">Date</th>
-                  <th className="text-right p-4 font-semibold text-gray-800">Amount</th>
-                  <th className="text-center p-4 font-semibold text-gray-800">Status</th>
-                  <th className="text-center p-4 font-semibold text-gray-800">Action</th>
+                <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 text-xs uppercase font-semibold tracking-wider">
+                  <th className="p-4 rounded-l-lg">Invoice #</th>
+                  <th className="p-4">Customer</th>
+                  <th className="p-4">Date</th>
+                  <th className="p-4 text-right">Amount</th>
+                  <th className="p-4 text-center">Status</th>
+                  <th className="p-4 text-center rounded-r-lg">Action</th>
                 </tr>
               </thead>
-              <tbody>
-                {recentBills.map((bill) => (
-                  <tr key={bill.id} className="border-b border-gray-200 hover:bg-gray-50 transition">
-                    <td className="p-4 font-semibold text-blue-600">{bill.bill_number}</td>
-                    <td className="p-4 text-gray-800">{bill.customer_name || 'N/A'}</td>
-                    <td className="p-4 text-gray-600">{bill.bill_date}</td>
-                    <td className="p-4 text-right font-bold text-gray-800">
-                      ₹{parseFloat(bill.total_amount || 0).toFixed(2)}
-                    </td>
-                    <td className="p-4 text-center">
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                          bill.payment_status === 'Paid'
-                            ? 'bg-green-100 text-green-700'
-                            : 'bg-yellow-100 text-yellow-700'
-                        }`}
-                      >
-                        {bill.payment_status || 'Pending'}
-                      </span>
-                    </td>
-                    <td className="p-4 text-center">
-                      <a
-                        href={`/bills/${bill.id}`}
-                        className="text-blue-600 hover:text-blue-800 font-semibold"
-                      >
-                        View
-                      </a>
-                    </td>
-                  </tr>
-                ))}
+              <tbody className="divide-y divide-slate-100">
+                {recentBills.map((bill) => {
+                  const isPaid = (bill.payment_status || '').toLowerCase() === 'paid';
+
+                  return (
+                    <tr
+                      key={bill.id}
+                      className="hover:bg-slate-50/80 transition-colors group"
+                    >
+                      <td className="p-4 font-semibold text-blue-600 group-hover:text-blue-700">
+                        {bill.bill_number}
+                      </td>
+                      <td className="p-4 font-medium text-slate-800">
+                        {bill.customer_name || 'N/A'}
+                      </td>
+                      <td className="p-4 text-slate-500 text-xs">
+                        {bill.bill_date
+                          ? new Date(bill.bill_date).toLocaleDateString('en-IN')
+                          : '—'}
+                      </td>
+                      <td className="p-4 text-right font-bold text-slate-900">
+                        {formatCurrency(bill.total_amount)}
+                      </td>
+                      <td className="p-4 text-center">
+                        <span
+                          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${
+                            isPaid
+                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/80'
+                              : 'bg-amber-50 text-amber-700 border border-amber-200/80'
+                          }`}
+                        >
+                          {isPaid ? (
+                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                          ) : (
+                            <Clock className="w-3.5 h-3.5 text-amber-600" />
+                          )}
+                          <span>{bill.payment_status || 'Pending'}</span>
+                        </span>
+                      </td>
+                      <td className="p-4 text-center">
+                        <Link
+                          to={`/bills/${bill.id}`}
+                          className="inline-flex items-center gap-1 text-slate-600 hover:text-blue-600 font-semibold text-xs px-2.5 py-1 hover:bg-blue-50 rounded-lg transition"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                          <span>View</span>
+                        </Link>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
         )}
 
-        {recentBills.length > 0 && (
-          <div className="mt-6 text-center">
-            <a
-              href="/bills"
-              className="inline-block bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
+        {recentBills.length > 0 && !loading && (
+          <div className="pt-2 text-center border-t border-slate-100">
+            <Link
+              to="/bills"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-xl transition"
             >
-              View All Bills →
-            </a>
+              <span>View All Recent Invoices ({stats.totalBills})</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
           </div>
         )}
       </div>
 
-      {/* Quick Actions */}
-      <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-        <a
-          href="/create-bill"
-          className="bg-blue-600 text-white p-6 rounded-lg hover:bg-blue-700 transition text-center"
-        >
-          <p className="text-3xl mb-2">📝</p>
-          <p className="font-semibold">Create New Bill</p>
-        </a>
+      {/* Standardized Quick Action Button Grid - Uniform Heights, Clean Styling & Labels */}
+      <div>
+        <h2 className="text-lg font-bold text-slate-900 mb-4">Quick Actions</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Action 1: Create New Bill */}
+          <Link
+            to="/create-bill"
+            className="group flex flex-col justify-between p-5 bg-white border border-slate-200/90 rounded-2xl shadow-sm hover:shadow-md hover:border-blue-300 transition-all duration-200 h-full"
+          >
+            <div>
+              <div className="w-10 h-10 bg-blue-50 border border-blue-100 rounded-xl flex items-center justify-center text-blue-600 mb-4 group-hover:scale-110 transition-transform">
+                <PlusCircle className="w-5 h-5 stroke-[2]" />
+              </div>
+              <h3 className="text-base font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
+                Create New Bill
+              </h3>
+              <p className="text-xs text-slate-500 mt-1">
+                Generate & issue a new JCB billing invoice
+              </p>
+            </div>
+            <div className="mt-4 flex items-center text-xs font-semibold text-blue-600 gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <span>Start Bill</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </div>
+          </Link>
 
-        <a
-          href="/customers"
-          className="bg-green-600 text-white p-6 rounded-lg hover:bg-green-700 transition text-center"
-        >
-          <p className="text-3xl mb-2">👥</p>
-          <p className="font-semibold">Manage Customers</p>
-        </a>
-        <a
-          href="/settings"
-          className="bg-purple-600 text-white p-6 rounded-lg hover:bg-purple-700 transition text-center"
-        ></a>
-        <a
-          href="/settings"
-          className="bg-purple-600 text-white p-6 rounded-lg hover:bg-purple-700 transition text-center"
-        >
-          <p className="text-3xl mb-2">⚙️</p>
-          <p className="font-semibold">Business Settings</p>
-        </a>
+          {/* Action 2: Manage Customers */}
+          <Link
+            to="/customer-list"
+            className="group flex flex-col justify-between p-5 bg-white border border-slate-200/90 rounded-2xl shadow-sm hover:shadow-md hover:border-emerald-300 transition-all duration-200 h-full"
+          >
+            <div>
+              <div className="w-10 h-10 bg-emerald-50 border border-emerald-100 rounded-xl flex items-center justify-center text-emerald-600 mb-4 group-hover:scale-110 transition-transform">
+                <Users className="w-5 h-5 stroke-[2]" />
+              </div>
+              <h3 className="text-base font-bold text-slate-900 group-hover:text-emerald-600 transition-colors">
+                Manage Customers
+              </h3>
+              <p className="text-xs text-slate-500 mt-1">
+                Add, edit & view registered customer profiles
+              </p>
+            </div>
+            <div className="mt-4 flex items-center text-xs font-semibold text-emerald-600 gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <span>Manage Records</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </div>
+          </Link>
+
+          {/* Action 3: View Reports */}
+          <Link
+            to="/reports"
+            className="group flex flex-col justify-between p-5 bg-white border border-slate-200/90 rounded-2xl shadow-sm hover:shadow-md hover:border-indigo-300 transition-all duration-200 h-full"
+          >
+            <div>
+              <div className="w-10 h-10 bg-indigo-50 border border-indigo-100 rounded-xl flex items-center justify-center text-indigo-600 mb-4 group-hover:scale-110 transition-transform">
+                <BarChart3 className="w-5 h-5 stroke-[2]" />
+              </div>
+              <h3 className="text-base font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">
+                View Reports
+              </h3>
+              <p className="text-xs text-slate-500 mt-1">
+                Revenue analytics & payment status charts
+              </p>
+            </div>
+            <div className="mt-4 flex items-center text-xs font-semibold text-indigo-600 gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <span>View Analytics</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </div>
+          </Link>
+
+          {/* Action 4: Business Settings */}
+          <Link
+            to="/settings"
+            className="group flex flex-col justify-between p-5 bg-white border border-slate-200/90 rounded-2xl shadow-sm hover:shadow-md hover:border-purple-300 transition-all duration-200 h-full"
+          >
+            <div>
+              <div className="w-10 h-10 bg-purple-50 border border-purple-100 rounded-xl flex items-center justify-center text-purple-600 mb-4 group-hover:scale-110 transition-transform">
+                <Settings className="w-5 h-5 stroke-[2]" />
+              </div>
+              <h3 className="text-base font-bold text-slate-900 group-hover:text-purple-600 transition-colors">
+                Business Settings
+              </h3>
+              <p className="text-xs text-slate-500 mt-1">
+                Update company info, GST & bank details
+              </p>
+            </div>
+            <div className="mt-4 flex items-center text-xs font-semibold text-purple-600 gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <span>Edit Settings</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </div>
+          </Link>
+        </div>
       </div>
     </div>
   );
